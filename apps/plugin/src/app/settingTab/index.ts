@@ -14,7 +14,20 @@ export class SettingsTab extends PluginSettingTab {
 
     containerEl.empty();
 
+    this.renderFollowButton(containerEl);
     this.renderSupportHeader(containerEl);
+  }
+
+  renderFollowButton(containerEl: HTMLElement) {
+    new Setting(containerEl)
+      .setName('Follow me on X')
+      .setDesc('@dSebastien')
+      .addButton((button) => {
+        button.setCta()
+        button.setButtonText('Follow me on X').onClick(() => {
+          window.open('https://x.com/dSebastien');
+        });
+      });
   }
 
   renderSupportHeader(containerEl: HTMLElement) {
@@ -29,7 +42,7 @@ export class SettingsTab extends PluginSettingTab {
 
     this.renderBuyMeACoffeeBadge(containerEl);
     const spacing = containerEl.createDiv();
-    spacing.style.marginBottom = '0.75em';
+    spacing.classList.add('support-header-margin');
   }
 
   renderBuyMeACoffeeBadge(
