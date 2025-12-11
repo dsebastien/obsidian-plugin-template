@@ -1,38 +1,139 @@
-# How to contribute
+# Contributing
 
-## Creating an Issue
+Thank you for your interest in contributing to this project!
 
-Before you create a new Issue:
+## Getting Started
 
-1. Please make sure there is no open issue about the topic yet
-2. If it is a bug report, include the steps to reproduce the issue
-3. If it is a feature request, please share the motivation for the new feature and how you would implement it
+### Prerequisites
 
-## Tests
+- [Bun](https://bun.sh/) (latest version)
+- [Git](https://git-scm.com/)
 
-If you want to submit a bug fix or new feature, make sure that all tests are passing.
+### Fork and Clone
+
+1. Fork this repository by clicking the "Fork" button on GitHub
+2. Clone your fork locally:
+    ```bash
+    git clone https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
+    cd YOUR_REPO_NAME
+    ```
+3. Add the upstream repository as a remote:
+    ```bash
+    git remote add upstream https://github.com/ORIGINAL_OWNER/YOUR_REPO_NAME.git
+    ```
+
+### Install Dependencies
 
 ```bash
-$ npm test
+bun install
 ```
 
-## Submitting a Pull Request
+## Development Workflow
 
-- Check out the open issues first. Create new ones or discuss if needed
-- Fork the project
-- Push changes to a dedicated branch of your fork
-- Submit a pull request
-- Be sure to tag any issues your pull request is taking care of or is contributing to.
+### Create a Branch
 
-## Development environment
+Create a new branch for your changes:
 
-In addition to the classic (npm/node, installation, etc), make sure to define the `OBSIDIAN_VAULT_LOCATION` environment variable. It should point to the root folder of an existing Obsidian vault. When building the DEV version (`npm run build:dev` or `npm run watch`), the plugin will be copied to that vault's `.obsidian/plugins` folder. This makes it easy to build and automatically have the up to date plugin for testing in Obsidian. It also avoids having to store the codebase within the Obsidian vault...
+```bash
+git checkout -b feature/your-feature-name
+```
 
-## Releasing a new version
+Use descriptive branch names:
 
-- Update the `minAppVersion` manually in `manifest.json` if needed
-- Run `npm version patch`, `npm version minor` or `npm version major` to update the `manifest.json` and `package.json` files
-- Commit all changes
-- Tag with the correct version number (e.g., 1.1.0)
-- Build a production version
-- Create a release on GitHub and make sure to include the following files as binary attachments: `main.js`, `manifest.json`, and `styles.css`
+- `feature/` for new features
+- `fix/` for bug fixes
+- `docs/` for documentation changes
+- `refactor/` for code refactoring
+
+### Development
+
+Start the TypeScript watch process:
+
+```bash
+bun run tsc:watch
+```
+
+Optionally, run tests in watch mode:
+
+```bash
+bun test --watch
+```
+
+### Code Quality
+
+Before committing, ensure your code passes all checks:
+
+```bash
+bun run format      # Format code
+bun run lint        # Check for lint errors
+bun run tsc         # Type check
+bun test            # Run tests
+```
+
+### Commit Your Changes
+
+Write clear, concise commit messages following [Conventional Commits](https://www.conventionalcommits.org/):
+
+```bash
+git add .
+git commit -m "feat: add new feature description"
+```
+
+Common prefixes:
+
+- `feat:` new feature
+- `fix:` bug fix
+- `docs:` documentation changes
+- `refactor:` code refactoring
+- `test:` adding or updating tests
+- `chore:` maintenance tasks
+
+### Keep Your Fork Updated
+
+Before creating a pull request, sync your fork with upstream:
+
+```bash
+git fetch upstream
+git rebase upstream/main
+```
+
+Resolve any conflicts if necessary.
+
+### Push Your Changes
+
+```bash
+git push origin feature/your-feature-name
+```
+
+## Creating a Pull Request
+
+1. Go to your fork on GitHub
+2. Click "Compare & pull request"
+3. Ensure the base repository and branch are correct
+4. Fill in the PR template:
+    - Provide a clear title
+    - Describe what changes you made and why
+    - Reference any related issues (e.g., "Fixes #123")
+5. Submit the pull request
+
+## Pull Request Guidelines
+
+- Keep PRs focused on a single change
+- Ensure all CI checks pass
+- Update documentation if needed
+- Add tests for new functionality
+- Be responsive to feedback and review comments
+
+## Code Style
+
+This project uses:
+
+- **ESLint** for linting
+- **Prettier** for formatting
+- **TypeScript** with strict mode enabled
+
+The CI pipeline enforces these standards. Run `bun run format` and `bun run lint` before committing.
+
+## Questions?
+
+If you have questions, feel free to open an issue for discussion.
