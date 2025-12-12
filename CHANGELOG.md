@@ -1,3 +1,8 @@
+## [2.0.2](https://github.com/your-username/obsidian-my-plugin/compare/2.0.1...2.0.2) (2025-12-12)
+
+### Bug Fixes
+
+* **all:** fix image url ([1a0086b](https://github.com/your-username/obsidian-my-plugin/commit/1a0086b1982b8da1f6e3c3135f27dcd9bb2ff787))
 ## [2.0.1](https://github.com/your-username/obsidian-my-plugin/compare/2.0.0...2.0.1) (2025-12-12)
 
 ### Bug Fixes
