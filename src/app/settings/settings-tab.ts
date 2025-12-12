@@ -22,7 +22,7 @@ export class MyPluginSettingTab extends PluginSettingTab {
     renderFollowButton(containerEl: HTMLElement) {
         new Setting(containerEl)
             .setName('Follow me on X')
-            .setDesc('@dSebastien')
+            .setDesc('Sébastien Dubois (@dSebastien)')
             .addButton((button) => {
                 button.setCta()
                 button.setButtonText('Follow me on X').onClick(() => {
@@ -54,7 +54,7 @@ export class MyPluginSettingTab extends PluginSettingTab {
         })
         const imgEl = linkEl.createEl('img')
         imgEl.src =
-            'https://github.com/dsebastien/obsidian-plugin-template/raw/main/apps/plugin/src/assets/buy-me-a-coffee.png'
+            'https://github.com/dsebastien/obsidian-plugin-template/blob/main/src/assets/buy-me-a-coffee.png?raw=true'
         imgEl.alt = 'Buy me a coffee'
         imgEl.width = width
     }
