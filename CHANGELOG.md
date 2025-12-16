@@ -1,3 +1,8 @@
+## [2.0.3](https://github.com/your-username/obsidian-my-plugin/compare/2.0.2...2.0.3) (2025-12-16)
+
+### Bug Fixes
+
+* **all:** adapt the build.ts to be generic ([d4da8a1](https://github.com/your-username/obsidian-my-plugin/commit/d4da8a1d8a839800785a89dda1594ff52f049607))
 ## [2.0.2](https://github.com/your-username/obsidian-my-plugin/compare/2.0.1...2.0.2) (2025-12-12)
 
 ### Bug Fixes
