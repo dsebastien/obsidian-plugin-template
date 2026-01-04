@@ -2,7 +2,7 @@
     "id": "my-plugin",
     "name": "My Plugin",
     "description": "TODO: Add your plugin description here",
-    "version": "2.0.3",
+    "version": "2.0.4",
     "minAppVersion": "1.4.0",
     "isDesktopOnly": false,
     "author": "Sébastien Dubois",

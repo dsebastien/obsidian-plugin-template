@@ -1,3 +1,8 @@
+## [2.0.4](https://github.com/your-username/obsidian-my-plugin/compare/2.0.3...2.0.4) (2026-01-04)
+
+### Bug Fixes
+
+* **all:** use console.debug instead of console.log ([09306e4](https://github.com/your-username/obsidian-my-plugin/commit/09306e492c81437dff10dfe8b3b5e5734be1382a))
 ## [2.0.3](https://github.com/your-username/obsidian-my-plugin/compare/2.0.2...2.0.3) (2025-12-16)
 
 ### Bug Fixes
