@@ -1,3 +1,9 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+
+
 ## [2.0.4](https://github.com/your-username/obsidian-my-plugin/compare/2.0.3...2.0.4) (2026-01-04)
 
 ### Bug Fixes
@@ -26,3 +32,4 @@
 ## [1.2.0](https://github.com/your-username/obsidian-my-plugin/compare/1.1.0...1.2.0) (2024-05-14)
 ## [1.1.0](https://github.com/your-username/obsidian-my-plugin/compare/1.0.0...1.1.0) (2024-05-13)
 ## 1.0.0 (2024-04-26)
+
