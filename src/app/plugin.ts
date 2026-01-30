@@ -55,7 +55,7 @@ export class MyPlugin extends Plugin {
         log(`Settings loaded`, 'debug', loadedSettings)
 
         if (needToSaveSettings) {
-            this.saveSettings()
+            void this.saveSettings()
         }
     }
 

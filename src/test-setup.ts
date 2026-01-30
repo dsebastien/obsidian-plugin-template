@@ -5,8 +5,8 @@
  */
 import { mock } from 'bun:test'
 
-// Mock the obsidian module
-mock.module('obsidian', () => ({
+// Mock the obsidian module (fire-and-forget, no need to await)
+void mock.module('obsidian', () => ({
     Notice: class Notice {
         constructor(_message: string, _timeout?: number) {
             // No-op for tests

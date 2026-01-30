@@ -15,10 +15,9 @@ export const log = (message: string, level?: LogLevel, ...data: unknown[]): void
     const logMessage = `${LOG_PREFIX} ${message}`
     switch (level) {
         case 'debug':
-            console.debug(logMessage, data)
-            break
         case 'info':
-            console.info(logMessage, data)
+            // Obsidian disallows console.log and console.info, use debug for both
+            console.debug(logMessage, data)
             break
         case 'warn':
             console.warn(logMessage, data)
@@ -27,7 +26,6 @@ export const log = (message: string, level?: LogLevel, ...data: unknown[]): void
             console.error(logMessage, data)
             break
         default:
-            // Obsidian requires console.debug for normal logs
             console.debug(logMessage, data)
     }
 }
