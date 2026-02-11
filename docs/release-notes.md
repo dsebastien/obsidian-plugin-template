@@ -1,5 +1,19 @@
 # Release Notes
 
+## 2.3.0 (2026-02-11)
+
+### Features
+
+- **all:** added docs template
+- **all:** added Obsidian skills (including obsidian cli)
+- **all:** updated scripts
+
+## 2.2.0 (2026-01-30)
+
+### Features
+
+- **all:** updated scripts
+
 ## 2.0.4 (2026-01-04)
 
 ### Bug Fixes
