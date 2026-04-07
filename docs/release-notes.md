@@ -1,5 +1,12 @@
 # Release Notes
 
+## 2.4.0 (2026-04-07)
+
+### Features
+
+- **all:** updated
+- **all:** updated workflows
+
 ## 2.3.0 (2026-02-11)
 
 ### Features

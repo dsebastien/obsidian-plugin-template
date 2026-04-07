@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.4.0](https://github.com/your-username/obsidian-my-plugin/compare/2.3.0...2.4.0) (2026-04-07)
+
+### Features
+
+* **all:** updated ([0c5de0f](https://github.com/your-username/obsidian-my-plugin/commit/0c5de0feca2f30f99a9d39e73e8421210a92e486))
+* **all:** updated workflows ([2bbb6ca](https://github.com/your-username/obsidian-my-plugin/commit/2bbb6ca11fc2b4a1a847eb9f29354ed89daa3cce))
+
 ## [2.3.0](https://github.com/your-username/obsidian-my-plugin/compare/2.2.0...2.3.0) (2026-02-11)
 
 ### Features
@@ -44,6 +51,7 @@ All notable changes to this project will be documented in this file.
 ## [1.2.0](https://github.com/your-username/obsidian-my-plugin/compare/1.1.0...1.2.0) (2024-05-14)
 ## [1.1.0](https://github.com/your-username/obsidian-my-plugin/compare/1.0.0...1.1.0) (2024-05-13)
 ## 1.0.0 (2024-04-26)
+
 
 
 
