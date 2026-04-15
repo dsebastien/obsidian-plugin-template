@@ -79,11 +79,11 @@ Search for `TODO` comments in the source code and update the following:
 
 ### 3.1 Plugin Class (`src/app/plugin.ts`)
 
-Rename `MyPlugin` to your plugin class name:
+Rename `TemplatePlugin` to your plugin class name:
 
 ```typescript
 // Before
-export class MyPlugin extends Plugin {
+export class TemplatePlugin extends Plugin {
 
 // After
 export class MyAwesomePlugin extends Plugin {
@@ -91,11 +91,11 @@ export class MyAwesomePlugin extends Plugin {
 
 ### 3.2 Settings Tab Class (`src/app/settings/settings-tab.ts`)
 
-Rename `MyPluginSettingTab` to match your plugin name:
+Rename `TemplatePluginSettingTab` to match your plugin name:
 
 ```typescript
 // Before
-export class MyPluginSettingTab extends PluginSettingTab {
+export class TemplatePluginSettingTab extends PluginSettingTab {
 
 // After
 export class MyAwesomePluginSettingTab extends PluginSettingTab {
@@ -105,7 +105,7 @@ Also update the type imports:
 
 ```typescript
 // Before
-import type MyPlugin from '../../main'
+import type TemplatePlugin from '../../main'
 
 // After
 import type MyAwesomePlugin from '../../main'
@@ -117,8 +117,8 @@ Update the import and export:
 
 ```typescript
 // Before
-import { MyPlugin } from './app/plugin'
-export default MyPlugin
+import { TemplatePlugin } from './app/plugin'
+export default TemplatePlugin
 
 // After
 import { MyAwesomePlugin } from './app/plugin'

@@ -1,13 +1,13 @@
 import { Plugin } from 'obsidian'
 import { DEFAULT_SETTINGS } from './types/plugin-settings.intf'
 import type { PluginSettings } from './types/plugin-settings.intf'
-import { MyPluginSettingTab } from './settings/settings-tab'
+import { TemplatePluginSettingTab } from './settings/settings-tab'
 import { log } from '../utils/log'
 import { produce } from 'immer'
 import type { Draft } from 'immer'
 
 // TODO: Rename this class to match your plugin name (e.g., MyAwesomePlugin)
-export class MyPlugin extends Plugin {
+export class TemplatePlugin extends Plugin {
     /**
      * The plugin settings are immutable
      */
@@ -23,7 +23,7 @@ export class MyPlugin extends Plugin {
         // TODO
 
         // Add a settings screen for the plugin
-        this.addSettingTab(new MyPluginSettingTab(this.app, this))
+        this.addSettingTab(new TemplatePluginSettingTab(this.app, this))
     }
 
     override onunload() {}

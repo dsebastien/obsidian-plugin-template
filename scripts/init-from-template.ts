@@ -170,7 +170,7 @@ function printNextSteps(a: Answers): void {
     console.log('')
     console.log('Manual follow-ups (not handled automatically):')
     console.log(
-        `  • Rename Plugin class in src/app/plugin.ts (e.g. MyPlugin → ${toPascal(a.pluginId)}Plugin)`
+        `  • Rename Plugin class in src/app/plugin.ts (e.g. TemplatePlugin → ${toPascal(a.pluginId)}Plugin)`
     )
     console.log('  • Rename settings tab class in src/app/settings/settings-tab.ts')
     console.log('  • Update imports/exports in src/main.ts')
