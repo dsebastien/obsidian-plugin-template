@@ -1,8 +1,3 @@
----
-title: Release notes
-nav_order: 98
----
-
 # Release Notes
 
 ## 2.4.0 (2026-04-07)
