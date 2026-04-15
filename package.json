@@ -53,6 +53,7 @@
         "commit": "cz",
         "cm": "cz",
         "commit:lint": "commitlint --edit",
+        "init": "bun scripts/init-from-template.ts",
         "release:update-version": "bun scripts/update-version.ts",
         "release:version-bump": "bun scripts/version-bump.ts",
         "release:changelog": "bun scripts/generate-changelog.ts",

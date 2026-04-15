@@ -1,3 +1,9 @@
+---
+title: Overview
+nav_order: 1
+permalink: /
+---
+
 # Plugin Name
 
 TODO: Add a brief description of what your plugin does.

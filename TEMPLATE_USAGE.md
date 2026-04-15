@@ -48,50 +48,23 @@ git branch -M main
 git push -u origin main
 ```
 
-## Step 2: Update Project Metadata
+## Step 2: Bootstrap Project Metadata
 
-### 2.1 Update `package.json`
+**Run this before anything else.** It prevents template state (release history, versions, plugin id) from leaking into your plugin's first release.
 
-Update the following fields with your project information:
-
-```json
-{
-    "name": "obsidian-my-awesome-plugin",
-    "description": "Your plugin description here",
-    "author": {
-        "name": "Your Name",
-        "email": "your-email@example.com",
-        "url": "https://your-website.com"
-    },
-    "keywords": ["obsidian", "obsidian-plugin", "your-keywords"],
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/YOUR_USERNAME/obsidian-my-awesome-plugin.git"
-    },
-    "bugs": {
-        "url": "https://github.com/YOUR_USERNAME/obsidian-my-awesome-plugin/issues"
-    },
-    "homepage": "https://github.com/YOUR_USERNAME/obsidian-my-awesome-plugin"
-}
+```bash
+bun install
+bun run init
 ```
 
-### 2.2 Update `manifest.json`
+The `init` script prompts for plugin id, display name, description, GitHub owner/repo, author, and funding URL, then:
 
-Update the plugin manifest with your plugin details:
+- Resets `CHANGELOG.md` to an empty header
+- Resets `versions.json` to `{}`
+- Rewrites `manifest.json` (`id`, `name`, `description`, `version` → `0.0.0`, `author`, `authorUrl`, `fundingUrl`)
+- Rewrites `package.json` (`name`, `version` → `0.0.0`, `description`, `author`, `repository`, `bugs`, `homepage`)
 
-```json
-{
-    "id": "my-awesome-plugin",
-    "name": "My Awesome Plugin",
-    "description": "Your plugin description here",
-    "version": "1.0.0",
-    "minAppVersion": "1.4.0",
-    "isDesktopOnly": false,
-    "author": "Your Name",
-    "authorUrl": "https://your-website.com",
-    "fundingUrl": "https://www.buymeacoffee.com/your-username"
-}
-```
+It refuses to run if the project has already been initialized (detected via the `package.json` name sentinel).
 
 **Important notes about `manifest.json`:**
 
@@ -170,26 +143,59 @@ The `.github/FUNDING.yml` file contains funding links for the template author. Y
 
 ## Step 4: Update Documentation
 
-### 4.1 Update `README.md`
+This template uses three distinct documentation surfaces. Keep them separate — mixing them is the most common onboarding mistake.
 
-Replace the template README with your plugin's documentation:
+| Location         | Audience                 | Purpose                                                                                     |
+| ---------------- | ------------------------ | ------------------------------------------------------------------------------------------- |
+| `README.md`      | GitHub visitors / users  | Pitch, features, install, quick start. The first thing anyone sees on the repo home page.   |
+| `docs/`          | End users of your plugin | User guide: usage, configuration, tips, release notes. Published via GitHub Pages (Jekyll). |
+| `documentation/` | You and coding agents    | Technical documentation: architecture, domain model, business rules, history, plans.        |
 
-- Plugin name and description
-- Features list
-- Installation instructions
-- Usage guide
-- Configuration options
-- Screenshots (if applicable)
+### 4.1 Rewrite `README.md`
 
-### 4.2 Update `CONTRIBUTING.md`
+The template `README.md` describes the template itself. Replace it entirely with content about **your plugin**:
 
-Update repository URLs and any project-specific contribution guidelines.
+- Plugin name and one-sentence pitch
+- Key features
+- Screenshots or a short demo (highly recommended)
+- Installation instructions (community catalog once published, BRAT for pre-release, manual install)
+- Quick-start / minimal usage example
+- Link to the full user guide in `docs/` (or the GitHub Pages URL once live)
+- Link to `CONTRIBUTING.md` and license
 
-### 4.3 Update `DEVELOPMENT.md`
+Keep the README scannable. Deep content belongs in `docs/`, not here.
+
+### 4.2 Populate `docs/` (user guide)
+
+`docs/` is the **user-facing** guide, published via GitHub Pages. The template ships with placeholder pages (`usage.md`, `configuration.md`, `tips.md`, `release-notes.md`). Rewrite each for your plugin:
+
+- **What** your plugin does from a user's perspective
+- **How to use** each feature (commands, settings, workflows)
+- Configuration reference with examples
+- Troubleshooting / FAQ
+- Changelog highlights for end users (not a commit-level changelog — that's auto-generated in `CHANGELOG.md`)
+
+Never put internal architecture notes, domain models, or agent instructions here.
+
+### 4.3 Populate `documentation/` (technical / agent-facing)
+
+`documentation/` holds the technical documentation used by you and by coding agents (see `AGENTS.md`). The template pre-creates:
+
+- `Architecture.md` — high-level system design
+- `Domain Model.md` — core entities and their relationships
+- `Business Rules.md` — invariants that must always hold (agents treat these as mandatory)
+- `Configuration.md` — technical config notes
+- `history/yyyy-mm-dd.md` — chronological log of what was done each working day
+- `plans/` — active plans for upcoming work
+- `archived/` — off-limits to agents unless explicitly requested
+
+Keep entries terse and factual. These files are context for future work — not marketing.
+
+### 4.4 Update `CONTRIBUTING.md` and `DEVELOPMENT.md`
 
 Update repository URLs and the plugin folder name in the manual installation section.
 
-### 4.4 Update or Remove `.github/FUNDING.yml`
+### 4.5 Update or Remove `.github/FUNDING.yml`
 
 See Step 3.5 above for guidance on the funding file.
 
@@ -253,15 +259,18 @@ bun run dev
 
 ## Step 9: Clean Up Template Files
 
-After completing the setup, remove this file:
+After completing the setup, remove the template-only files:
 
 ```bash
-rm TEMPLATE_USAGE.md
+rm TEMPLATE_USAGE.md scripts/init-from-template.ts
 ```
+
+Then remove the `init` script entry from `package.json`.
 
 Also review and clean up:
 
-- `documentation/` folder - update or remove template documentation
+- `documentation/` folder - replace template placeholders with content for your plugin
+- `docs/` folder - replace the user guide placeholders with content for your plugin
 - `TODO.md` - if present, review and update for your project
 
 ## Creating Your First Release

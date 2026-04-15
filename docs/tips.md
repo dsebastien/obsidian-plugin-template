@@ -1,3 +1,8 @@
+---
+title: Tips & best practices
+nav_order: 90
+---
+
 # Tips and Best Practices
 
 TODO: Add tips and best practices for using your plugin.
