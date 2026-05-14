@@ -1,7 +1,7 @@
 {
     "name": "obsidian-my-plugin",
     "version": "2.6.0",
-    "description": "TODO: Add your plugin description here",
+    "description": "TODO: describe what your plugin does (must end with a period, must not contain the word \"Obsidian\", must not start with the plugin name).",
     "author": {
         "name": "Your Name",
         "email": "your-email@example.com",

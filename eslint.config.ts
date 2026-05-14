@@ -3,8 +3,9 @@ import tseslint from 'typescript-eslint'
 import eslintConfigPrettier from 'eslint-config-prettier'
 import globals from 'globals'
 import obsidianmd from 'eslint-plugin-obsidianmd'
+import { defineConfig } from 'eslint/config'
 
-export default tseslint.config(
+export default defineConfig([
     eslint.configs.recommended,
     ...tseslint.configs.recommended,
     // @ts-expect-error - obsidianmd types are incomplete but the config works at runtime
@@ -30,7 +31,10 @@ export default tseslint.config(
                 createDiv: 'readonly',
                 createEl: 'readonly',
                 createSpan: 'readonly',
-                createFragment: 'readonly'
+                createFragment: 'readonly',
+                // Obsidian popout-window-aware globals
+                activeWindow: 'readonly',
+                activeDocument: 'readonly'
             },
             parserOptions: {
                 projectService: true,
@@ -39,7 +43,11 @@ export default tseslint.config(
         },
         rules: {
             '@typescript-eslint/no-require-imports': 'off',
-            '@typescript-eslint/no-explicit-any': 'warn',
+            // The community-plugin reviewer treats both the rule violation
+            // and any `eslint-disable @typescript-eslint/no-explicit-any` as
+            // an ERROR that blocks the scorecard. Catch locally as error,
+            // not warn. See AGENTS.md "Community catalog review".
+            '@typescript-eslint/no-explicit-any': 'error',
             '@typescript-eslint/no-unused-vars': [
                 'error',
                 { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }
@@ -59,4 +67,4 @@ export default tseslint.config(
             'obsidianmd/ui/sentence-case': 'off'
         }
     }
-)
+])
