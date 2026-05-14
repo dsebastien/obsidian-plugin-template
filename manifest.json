@@ -2,7 +2,7 @@
     "id": "my-plugin",
     "name": "My Plugin",
     "description": "TODO: describe what your plugin does (must end with a period, must not contain the word \"Obsidian\", must not start with the plugin name).",
-    "version": "2.6.0",
+    "version": "2.6.1",
     "minAppVersion": "1.4.0",
     "isDesktopOnly": false,
     "author": "Sébastien Dubois",

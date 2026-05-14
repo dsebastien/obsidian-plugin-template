@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.6.1](https://github.com/your-username/obsidian-my-plugin/compare/2.6.0...2.6.1) (2026-05-14)
+
 ## [2.6.0](https://github.com/your-username/obsidian-my-plugin/compare/2.5.0...2.6.0) (2026-05-13)
 
 ## [2.4.0](https://github.com/dsebastien/obsidian-plugin-template/compare/2.3.0...2.4.0) (2026-04-07)
@@ -53,6 +55,7 @@ All notable changes to this project will be documented in this file.
 ## [1.2.0](https://github.com/dsebastien/obsidian-plugin-template/compare/1.1.0...1.2.0) (2024-05-14)
 ## [1.1.0](https://github.com/dsebastien/obsidian-plugin-template/compare/1.0.0...1.1.0) (2024-05-13)
 ## 1.0.0 (2024-04-26)
+
 
 
 
