@@ -451,8 +451,6 @@ const button = container.createEl('button', {
 
 The community-plugin reviewer runs a fixed set of lint rules against every submitted release. Most warnings repeat across plugins and have known idiomatic fixes. **Apply these patterns from day one** — fixing them retroactively is much more expensive than getting them right the first time.
 
-Comprehensive recipes with code examples and gotchas live in `fix-obsidian-review.md` (see References). The rules below are the preventative version.
-
 ### API conventions (DOM, timers, popouts)
 
 - `document` → `activeDocument` (so popout windows hit their own DOM).
@@ -461,7 +459,7 @@ Comprehensive recipes with code examples and gotchas live in `fix-obsidian-revie
 - `document.createElement(tag)` → `createEl(tag, …)` / `createSpan(…)` / `createDiv(…)`. Prefer parent-bound `el.createEl(…)` when a parent exists; the child is appended automatically.
 - `globalThis.X` for plugin-injected globals (Excalidraw etc.) → `window.X`.
 - `processFrontMatter` callback param type: `(frontmatter: Record<string, unknown>) => …` — Obsidian's default is `any` and trips unsafe-access rules.
-- External SDKs that need a custom `fetch`: inject a `requestUrl`-based adapter via the SDK's `fetch` option. Never `node-fetch`, never `globalThis.fetch = require('node-fetch')`. The adapter pattern lives in `fix-obsidian-review.md`.
+- External SDKs that need a custom `fetch`: inject a `requestUrl`-based adapter via the SDK's `fetch` option (most SDKs that need a custom fetch — Replicate, OpenAI, etc. — expose one). Never `node-fetch`, never `globalThis.fetch = require('node-fetch')`. The adapter wraps `requestUrl` in a `fetch`-shaped function and refuses non-string/ArrayBuffer bodies; no streaming, no AbortSignal, no FormData. Adequate for plain GET/POST polling.
 
 ### Lint / TypeScript rules
 
@@ -622,4 +620,4 @@ this.registerInterval(
 - Developer policies: https://docs.obsidian.md/Developer+policies
 - Plugin guidelines: https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines
 - Style guide: https://help.obsidian.md/style-guide
-- `fix-obsidian-review.md` — verified recipes for every recurring community-catalog review warning (manifest, source code, build verification, CSS lint), cross-linked from the "Community catalog review — preventative rules" section above. Mine sibling plugin commits for prior fixes before re-inventing solutions.
+- When fixing community-catalog review warnings, mine sibling plugin commits for prior fixes before re-inventing solutions — the same warnings recur across plugins and most have already been solved once.
