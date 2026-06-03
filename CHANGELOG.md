@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.6.2](https://github.com/your-username/obsidian-my-plugin/compare/2.6.1...2.6.2) (2026-06-03)
+
+### Bug Fixes
+
+* **all:** added warning and fix for latest Obsidian release search changes ([5ffca92](https://github.com/your-username/obsidian-my-plugin/commit/5ffca927d6c49e046b428a55ae432189ea18b766))
+
 ## [2.6.1](https://github.com/your-username/obsidian-my-plugin/compare/2.6.0...2.6.1) (2026-05-14)
 
 ## [2.6.0](https://github.com/your-username/obsidian-my-plugin/compare/2.5.0...2.6.0) (2026-05-13)
@@ -55,6 +61,7 @@ All notable changes to this project will be documented in this file.
 ## [1.2.0](https://github.com/dsebastien/obsidian-plugin-template/compare/1.1.0...1.2.0) (2024-05-14)
 ## [1.1.0](https://github.com/dsebastien/obsidian-plugin-template/compare/1.0.0...1.1.0) (2024-05-13)
 ## 1.0.0 (2024-04-26)
+
 
 
 

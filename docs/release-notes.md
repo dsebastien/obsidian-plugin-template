@@ -1,5 +1,11 @@
 # Release Notes
 
+## 2.6.2 (2026-06-03)
+
+### Bug Fixes
+
+- **all:** added warning and fix for latest Obsidian release search changes
+
 ## 2.6.1 (2026-05-14)
 
 ## 2.6.0 (2026-05-13)
