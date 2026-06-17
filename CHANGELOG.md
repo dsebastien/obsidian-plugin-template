@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.6.3](https://github.com/your-username/obsidian-my-plugin/compare/2.6.2...2.6.3) (2026-06-17)
+
+### Bug Fixes
+
+* **deps:** override vulnerable transitive dev dependencies ([105930b](https://github.com/your-username/obsidian-my-plugin/commit/105930b6b0a3770cd587c1cdd475685c07cc7ce8))
+
 ## [2.6.2](https://github.com/your-username/obsidian-my-plugin/compare/2.6.1...2.6.2) (2026-06-03)
 
 ### Bug Fixes
@@ -61,6 +67,7 @@ All notable changes to this project will be documented in this file.
 ## [1.2.0](https://github.com/dsebastien/obsidian-plugin-template/compare/1.1.0...1.2.0) (2024-05-14)
 ## [1.1.0](https://github.com/dsebastien/obsidian-plugin-template/compare/1.0.0...1.1.0) (2024-05-13)
 ## 1.0.0 (2024-04-26)
+
 
 
 

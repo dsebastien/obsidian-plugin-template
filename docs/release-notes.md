@@ -1,5 +1,11 @@
 # Release Notes
 
+## 2.6.3 (2026-06-17)
+
+### Bug Fixes
+
+- **deps:** override vulnerable transitive dev dependencies
+
 ## 2.6.2 (2026-06-03)
 
 ### Bug Fixes
