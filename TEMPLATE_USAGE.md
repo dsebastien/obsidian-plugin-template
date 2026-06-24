@@ -63,6 +63,7 @@ The `init` script prompts for plugin id, display name, description, GitHub owner
 - Resets `versions.json` to `{}`
 - Rewrites `manifest.json` (`id`, `name`, `description`, `version` → `0.0.0`, `author`, `authorUrl`, `fundingUrl`)
 - Rewrites `package.json` (`name`, `version` → `0.0.0`, `description`, `author`, `repository`, `bugs`, `homepage`)
+- Rewrites `docs/_config.yml` (`title`, `description`, `baseurl`, and the GitHub `aux_links` URL) so the GitHub Pages site builds under your repo path instead of the template's
 
 It refuses to run if the project has already been initialized (detected via the `package.json` name sentinel).
 
@@ -167,13 +168,11 @@ Keep the README scannable. Deep content belongs in `docs/`, not here.
 
 ### 4.2 Populate `docs/` (user guide)
 
-`docs/` is the **user-facing** guide, published via GitHub Pages. The template ships with placeholder pages (`usage.md`, `configuration.md`, `tips.md`, `release-notes.md`). Rewrite each for your plugin:
+`docs/` is the **user-facing** guide, published via GitHub Pages. The template ships with placeholder pages — rewrite **every** one of them for your plugin. It is easy to miss the two that aren't obvious content pages:
 
-- **What** your plugin does from a user's perspective
-- **How to use** each feature (commands, settings, workflows)
-- Configuration reference with examples
-- Troubleshooting / FAQ
-- Changelog highlights for end users (not a commit-level changelog — that's auto-generated in `CHANGELOG.md`)
+- **`docs/README.md`** — the docs site **landing page** (`permalink: /`). Out of the box it still says `# Plugin Name`, `Created by [Your Name](https://your-website.com)`, and carries `TODO:` markers. Rewrite it with your plugin's pitch, key features, a quick start, and a real **About**/author section. This is the page most likely to ship with template placeholders because it doesn't look like the others.
+- **`docs/_config.yml`** — the Jekyll site config (`title`, `description`, `baseurl`, `aux_links`). `bun run init` rewrites the core fields for you, but **verify** them: `baseurl` must match your repo name (it's the GitHub Pages path), and review `aux_links`, `color_scheme`, and any `exclude:` entries (the template excludes a `SUMMARY.md` that may not exist in your project). Also give `docs/release-notes.md` Jekyll frontmatter (`title:` + `nav_order:`) if you want it in the site nav.
+- **`usage.md`, `configuration.md`, `tips.md`, `release-notes.md`** — the content pages. For each: **what** your plugin does from a user's perspective, **how to use** each feature (commands, settings, workflows), a configuration reference with examples, troubleshooting / FAQ, and changelog highlights for end users (not a commit-level changelog — that's auto-generated in `CHANGELOG.md`).
 
 Never put internal architecture notes, domain models, or agent instructions here.
 

@@ -7,6 +7,7 @@
  *   - versions.json → {}
  *   - manifest.json → id, name, description, version (0.0.0), author fields
  *   - package.json → name, version (0.0.0), description, author, repo URLs
+ *   - docs/_config.yml → title, description, baseurl, GitHub aux link
  *
  * Usage: bun run init
  */
@@ -164,6 +165,27 @@ async function updatePackageJson(a: Answers): Promise<void> {
     console.log('  ✓ package.json updated')
 }
 
+async function updateDocsConfig(a: Answers): Promise<void> {
+    const path = 'docs/_config.yml'
+    const file = Bun.file(path)
+    if (!(await file.exists())) {
+        console.log('  • docs/_config.yml not found, skipped')
+        return
+    }
+    const repoHttps = `https://github.com/${a.githubOwner}/${a.repoName}`
+    const config = await file.text()
+    const updated = config
+        .replace(/^title:.*$/m, `title: ${a.pluginName}`)
+        .replace(
+            /^description:.*$/m,
+            `description: Documentation for the ${a.pluginName} Obsidian plugin.`
+        )
+        .replace(/^baseurl:.*$/m, `baseurl: /${a.repoName}`)
+        .replace(/^(\s*)GitHub:.*$/m, `$1GitHub: ${repoHttps}`)
+    await Bun.write(path, updated)
+    console.log('  ✓ docs/_config.yml updated')
+}
+
 function printNextSteps(a: Answers): void {
     console.log('')
     console.log('=== Done ===')
@@ -175,6 +197,9 @@ function printNextSteps(a: Answers): void {
     console.log('  • Rename settings tab class in src/app/settings/settings-tab.ts')
     console.log('  • Update imports/exports in src/main.ts')
     console.log('  • Rewrite README.md for your plugin')
+    console.log(
+        '  • Rewrite docs/README.md (the docs site landing page — still has "Plugin Name"/"Your Name" placeholders)'
+    )
     console.log(
         '  • Replace placeholder content in docs/ (user guide) and documentation/ (technical docs)'
     )
@@ -201,5 +226,6 @@ if (import.meta.main) {
     await resetVersions()
     await updateManifest(answers)
     await updatePackageJson(answers)
+    await updateDocsConfig(answers)
     printNextSteps(answers)
 }
