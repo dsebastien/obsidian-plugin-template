@@ -489,6 +489,7 @@ The community-plugin reviewer runs a fixed set of lint rules against every submi
 
 ### Release workflow
 
+- Two-phase by design: a `prepare` job (dispatch on a branch) bumps versions, generates the changelog, commits, tags the release commit (lightweight tag), then re-dispatches the workflow at the tag; the `publish` job (dispatch at the tag, or a bare tag push) builds, attests, and releases at `github.sha == tag commit`. Never build/attest before tagging — the provenance attestation must be bound to the commit the release tag points to, or the community-catalog review rejects the release.
 - Attach only `main.js`, `manifest.json`, and `styles.css` (if present) — never a zip. The CI release workflow in this template already does this; don't add zip-upload steps back.
 - Build in CI; don't post-edit `main.js`.
 - `bun-version-file: package.json` (already wired) keeps Bun pinned across CI and release. Update `packageManager` in `package.json` to bump.

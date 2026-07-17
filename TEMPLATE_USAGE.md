@@ -292,28 +292,32 @@ git tag 1.0.0
 git push origin 1.0.0
 ```
 
-3. The GitHub Actions release workflow will automatically:
-    - Build the plugin
-    - Generate a changelog
-    - Create a GitHub release with the necessary files
+3. The GitHub Actions release workflow (publish phase) will automatically:
+    - Verify the tag matches the version in `manifest.json` (bump it before tagging)
+    - Build the plugin and attest the artifacts at the tagged commit
+    - Create a GitHub release with the necessary files, using the notes from `CHANGELOG.md`
 
 ## Subsequent Releases
 
 For subsequent releases, you can either:
 
-### Manual Tag (Recommended for major releases)
+### Workflow Dispatch (Recommended)
+
+1. Go to **Actions → Release** in your repository
+2. Click "Run workflow"
+3. Enter the version number (e.g., `1.1.0`) and leave "publish" unchecked
+4. Click "Run workflow"
+
+The release is two-phase: a **prepare** job bumps `package.json`, `manifest.json`, and `versions.json`, generates `CHANGELOG.md`, commits and tags that commit, then re-dispatches the workflow at the tag. The **publish** job builds, attests, and creates the release at the exact tagged commit, so the provenance attestation is bound to the commit the release tag points to.
+
+### Manual Tag
 
 ```bash
 git tag 1.1.0
 git push origin 1.1.0
 ```
 
-### Workflow Dispatch
-
-1. Go to **Actions → Release** in your repository
-2. Click "Run workflow"
-3. Enter the version number (e.g., `1.1.0`)
-4. Click "Run workflow"
+This only runs the publish phase: the tag must point at a commit where `manifest.json` already has the matching version and `CHANGELOG.md` has an entry for it.
 
 ## Publishing to Obsidian Community Plugins
 
