@@ -29,7 +29,8 @@ module.exports = {
         { name: 'build' },
         { name: 'deps' },
         { name: 'docs' },
-        { name: 'plugin' }
+        { name: 'plugin' },
+        { name: 'release' }
     ],
     allowCustomScopes: true,
     allowBreakingChanges: ['feat', 'fix']
