@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.0](https://github.com/your-username/obsidian-my-plugin/compare/2.6.3...2.7.0) (2026-07-17)
+
+### Features
+
+* **build:** rewrite docs/_config.yml on init, document docs landing page ([4d0d6f7](https://github.com/your-username/obsidian-my-plugin/commit/4d0d6f70fdbe7e053c6c95c424eaf669ff974669))
+
+### Bug Fixes
+
+* **plugin:** add override modifiers required by obsidian 1.13 typings ([9769d12](https://github.com/your-username/obsidian-my-plugin/commit/9769d12f5296b5fed05a569846ea18939789550c))
+* **plugin:** drop invalid override on settings property ([c21217c](https://github.com/your-username/obsidian-my-plugin/commit/c21217cbc94ddeac62993848a4d27170e94f366f))
+
 ## [2.6.3](https://github.com/your-username/obsidian-my-plugin/compare/2.6.2...2.6.3) (2026-06-17)
 
 ### Bug Fixes
@@ -67,6 +78,7 @@ All notable changes to this project will be documented in this file.
 ## [1.2.0](https://github.com/dsebastien/obsidian-plugin-template/compare/1.1.0...1.2.0) (2024-05-14)
 ## [1.1.0](https://github.com/dsebastien/obsidian-plugin-template/compare/1.0.0...1.1.0) (2024-05-13)
 ## 1.0.0 (2024-04-26)
+
 
 
 

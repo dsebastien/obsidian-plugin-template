@@ -1,5 +1,16 @@
 # Release Notes
 
+## 2.7.0 (2026-07-17)
+
+### Features
+
+- **build:** rewrite docs/\_config.yml on init, document docs landing page
+
+### Bug Fixes
+
+- **plugin:** add override modifiers required by obsidian 1.13 typings
+- **plugin:** drop invalid override on settings property
+
 ## 2.6.3 (2026-06-17)
 
 ### Bug Fixes
