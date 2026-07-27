@@ -3,7 +3,7 @@
     "name": "My Plugin",
     "description": "TODO: describe what your plugin does (must end with a period, must not contain the word \"Obsidian\", must not start with the plugin name).",
     "version": "2.7.0",
-    "minAppVersion": "1.4.0",
+    "minAppVersion": "1.8.7",
     "isDesktopOnly": false,
     "author": "Sébastien Dubois",
     "authorUrl": "https://dsebastien.net",
