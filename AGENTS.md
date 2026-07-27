@@ -248,6 +248,7 @@ scripts/
     - `isDesktopOnly` (boolean)
     - Optional: `author`, `authorUrl`, `fundingUrl` (string or map)
 - Never change `id` after release. Treat it as stable API.
+- **Never set `minAppVersion` above the latest PUBLIC Obsidian release.** Versions marked "early access" on https://obsidian.md/changelog/ are Catalyst-only; gating on them locks out every regular user (installs and updates are hidden/blocked). The installed `obsidian` typings version is NOT the floor — determine the real floor by typechecking against older typings. Pin the `obsidian` dev dependency to the latest public release (never `latest`, never a Catalyst version); type-only niceties from newer typings (e.g. `override` on `Plugin.settings`, `@since 1.13.0`) are not worth losing public users. Runtime-guarded dual paths (e.g. declarative settings + `display()` fallback) let you adopt new APIs without raising the floor.
 - Keep `minAppVersion` accurate when using newer APIs. Common bumps: `1.1.0` (`ButtonComponent.setIcon`/`setTooltip`), `1.4.10` (`AbstractInputSuggest`), `1.5.7` (`Vault.getFileByPath`), `1.7.2` (`Workspace.revealLeaf`).
 - Canonical requirements are coded here: https://github.com/obsidianmd/obsidian-releases/blob/master/.github/workflows/validate-plugin-entry.yml
 

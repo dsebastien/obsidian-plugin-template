@@ -11,7 +11,9 @@ export class TemplatePlugin extends Plugin {
     /**
      * The plugin settings are immutable
      */
-    override settings: PluginSettings = produce(DEFAULT_SETTINGS, () => DEFAULT_SETTINGS)
+    // No `override`: `Plugin.settings` only exists in API 1.13+ typings and the
+    // plugin supports older public releases.
+    settings: PluginSettings = produce(DEFAULT_SETTINGS, () => DEFAULT_SETTINGS)
 
     /**
      * Executed as soon as the plugin loads
