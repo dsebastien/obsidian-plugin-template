@@ -176,6 +176,15 @@ Keep the README scannable. Deep content belongs in `docs/`, not here.
 
 Never put internal architecture notes, domain models, or agent instructions here.
 
+#### Support CTAs (README, docs landing page, docs footer)
+
+The template ships the same support calls to action as the "What's new" dialog, so people find them wherever they land:
+
+- **`README.md`** and **`docs/README.md`** end with a `## News & support` section preceded by a `<!-- support-cta -->` marker. The marker delimits the generated block: everything from it to the next `##` heading is owned by the CTA and can be regenerated across all plugin repos at once.
+- **`docs/_config.yml`** sets `footer_content`, which just-the-docs renders at the bottom of **every** documentation page.
+
+The links are the newsletter, the YouTube channel, the Knowii community, GitHub Sponsors, and Buy me a coffee. Keep the marker in place if you want fleet-wide updates to keep working; replace the links with your own if you are using this template for your own plugin.
+
 ### 4.3 Populate `documentation/` (technical / agent-facing)
 
 `documentation/` holds the technical documentation used by you and by coding agents (see `AGENTS.md`). The template pre-creates:
