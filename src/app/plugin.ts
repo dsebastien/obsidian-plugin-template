@@ -3,7 +3,7 @@ import { DEFAULT_SETTINGS } from './types/plugin-settings.intf'
 import type { PluginSettings } from './types/plugin-settings.intf'
 import { TemplatePluginSettingTab } from './settings/settings-tab'
 import { log } from '../utils/log'
-import { registerWhatsNewDialog } from './whats-new'
+import { registerWhatsNewView } from './whats-new'
 import { produce } from 'immer'
 import type { Draft } from 'immer'
 
@@ -22,7 +22,7 @@ export class TemplatePlugin extends Plugin {
     override async onload() {
         log('Initializing', 'debug')
         // Must run before anything can call saveData (fresh-install detection)
-        registerWhatsNewDialog(this)
+        registerWhatsNewView(this)
         await this.loadSettings()
 
         // TODO
