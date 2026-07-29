@@ -57,6 +57,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for contribution guidelines.
 MIT License - see [LICENSE](./LICENSE) for details.
 
 <!-- support-cta -->
+
 ## News & support
 
 To stay up to date about this plugin, Obsidian in general, Personal Knowledge Management and note-taking:

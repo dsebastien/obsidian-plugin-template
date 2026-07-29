@@ -31,6 +31,7 @@ Created by [Your Name](https://your-website.com).
 TODO: Update author information and support links.
 
 <!-- support-cta -->
+
 ## News & support
 
 To stay up to date about this plugin, Obsidian in general, Personal Knowledge Management and note-taking:

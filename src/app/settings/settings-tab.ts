@@ -1,6 +1,7 @@
 import { App, PluginSettingTab, Setting } from 'obsidian'
 import type TemplatePlugin from '../../main'
 import { BUY_ME_A_COFFEE_BADGE_DATA_URL } from '../assets/buy-me-a-coffee'
+import { BUY_ME_A_COFFEE_URL, renderSupportSection } from '../ui/support-links'
 
 // TODO: Rename this class to match your plugin name (e.g., MyAwesomePluginSettingTab)
 export class TemplatePluginSettingTab extends PluginSettingTab {
@@ -34,24 +35,15 @@ export class TemplatePluginSettingTab extends PluginSettingTab {
 
     // TODO: Adapt this or remove
     renderSupportHeader(containerEl: HTMLElement) {
-        new Setting(containerEl).setName('Support').setHeading()
-
-        const supportDesc = new DocumentFragment()
-        supportDesc.createDiv({
-            text: 'Buy me a coffee to support the development of this plugin ❤️'
+        renderSupportSection(containerEl, (el) => {
+            this.renderBuyMeACoffeeBadge(el)
         })
-
-        new Setting(containerEl).setDesc(supportDesc)
-
-        this.renderBuyMeACoffeeBadge(containerEl)
-        const spacing = containerEl.createDiv()
-        spacing.classList.add('support-header-margin')
     }
 
     // TODO: Adapt this or remove
     renderBuyMeACoffeeBadge(contentEl: HTMLElement | DocumentFragment, width = 175) {
         const linkEl = contentEl.createEl('a', {
-            href: 'https://www.buymeacoffee.com/dsebastien'
+            href: BUY_ME_A_COFFEE_URL
         })
         const imgEl = linkEl.createEl('img')
         imgEl.src = BUY_ME_A_COFFEE_BADGE_DATA_URL

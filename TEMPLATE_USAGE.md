@@ -185,6 +185,15 @@ The template ships the same support calls to action as the "What's new" dialog, 
 
 The links are the newsletter, the YouTube channel, the Knowii community, GitHub Sponsors, and Buy me a coffee. Keep the marker in place if you want fleet-wide updates to keep working; replace the links with your own if you are using this template for your own plugin.
 
+The same calls to action are wired into four more surfaces:
+
+- **`src/app/ui/support-links.ts`** — the single source of truth for the URLs, plus `renderSupportSection()`. Both the settings tab and the "What's new" dialog import from it, so the wording never drifts. The settings tab passes its Buy me a coffee badge renderer as a callback (the badge asset is plugin-local).
+- **`manifest.json` → `fundingUrl`** — an object of labelled URLs, not a single string. Obsidian renders every entry in the community plugin browser and in the installed-plugin entry, which is the only CTA surface Obsidian itself provides.
+- **`.github/FUNDING.yml`** — `github`, `buy_me_a_coffee` and `custom:` entries drive GitHub's Sponsor button and dropdown.
+- **`.github/release-footer.md`** — appended to every GitHub release body by `release.yml` (see the "Extract changelog for release notes" step), so release pages carry the CTAs too.
+
+Finally, `README.md` and `docs/README.md` carry an `<!-- other-plugins:start -->` / `<!-- other-plugins:end -->` block listing the author's other plugins. It is generated from each repo's `manifest.json` (name + description), so plugins cross-promote each other. Regenerate it after publishing a new plugin.
+
 ### 4.3 Populate `documentation/` (technical / agent-facing)
 
 `documentation/` holds the technical documentation used by you and by coding agents (see `AGENTS.md`). The template pre-creates:
