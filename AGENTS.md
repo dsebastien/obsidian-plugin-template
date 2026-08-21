@@ -322,6 +322,10 @@ the two statically-catchable ones.
   refuse the cleared value inline.
 - **A row `action:` fires on the WHOLE row, not on a button.** Destructive
   rows need their own confirmation modal.
+- **`onDelete` decorates only plain list rows — `type: 'page'` entries get NO
+  delete button.** A list of sub-pages silently loses its delete affordance;
+  give each page an explicit "Remove" row (a warning-styled button in its own
+  row, deleting by stable id). Caught in the first fleet port's vault review.
 - **`onDelete(index)` indexes the LIVE list.** The framework re-indexes on
   drag immediately, while a settings refresh waits on persistence. Resolve the
   entity from the live index, never from a render-time snapshot.
