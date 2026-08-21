@@ -30,8 +30,8 @@ describe('declarative settings guard', () => {
             // Strip comments first: docs are allowed (encouraged, even) to
             // NAME the forbidden patterns; code is not allowed to USE them.
             const content = raw.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '')
-            if (content.includes('group.listEl')) {
-                offenders.push(`${file}: writes into group.listEl`)
+            if (/\.\s*listEl\b|\[\s*['"]listEl['"]\s*\]/.test(content)) {
+                offenders.push(`${file}: accesses a group listEl`)
             }
             if (/settingEl\s*\.\s*remove\s*\(/.test(content)) {
                 offenders.push(`${file}: removes settingEl`)
