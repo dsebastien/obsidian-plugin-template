@@ -70,8 +70,14 @@ export class TemplatePlugin extends Plugin {
      * control edit through here so persistence happens in exactly one place.
      */
     async updateSettings(mutator: (draft: Draft<PluginSettings>) => void) {
-        this.settings = produce(this.settings, mutator)
-        await this.saveSettings()
+        // Persist-then-commit: swap memory only after saveData() succeeds.
+        // The settings tab rejects setControlValue when this throws, and the
+        // framework rolls the control back to getControlValue's answer —
+        // which must be the value actually on disk, not an optimistic
+        // mutation that never landed.
+        const next = produce(this.settings, mutator)
+        await this.saveData(next)
+        this.settings = next
     }
 
     /**

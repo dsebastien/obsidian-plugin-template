@@ -329,6 +329,10 @@ the two statically-catchable ones.
 - **`onDelete(index)` indexes the LIVE list.** The framework re-indexes on
   drag immediately, while a settings refresh waits on persistence. Resolve the
   entity from the live index, never from a render-time snapshot.
+- **Persist before committing to memory.** `updateSettings` must write to
+  disk first and swap the in-memory settings only on success — a rejection
+  rolls the control back to `getControlValue`'s answer, which must be the
+  on-disk truth, not an optimistic mutation that never landed.
 - **`setControlValue` MUST reject on failure.** Resolving tells the framework
   the write landed, so the pane keeps showing a value that was never stored.
   Rejecting rolls the control back to `getControlValue`'s answer.
