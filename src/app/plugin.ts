@@ -12,9 +12,9 @@ export class TemplatePlugin extends Plugin {
     /**
      * The plugin settings are immutable
      */
-    // No `override`: `Plugin.settings` only exists in API 1.13+ typings and the
-    // plugin supports older public releases.
-    settings: PluginSettings = produce(DEFAULT_SETTINGS, () => DEFAULT_SETTINGS)
+    // `override` required: `Plugin.settings?: unknown` exists in the 1.13+
+    // typings this template now targets (minAppVersion 1.13.0).
+    override settings: PluginSettings = produce(DEFAULT_SETTINGS, () => DEFAULT_SETTINGS)
 
     /**
      * Executed as soon as the plugin loads
@@ -62,6 +62,16 @@ export class TemplatePlugin extends Plugin {
         if (needToSaveSettings) {
             void this.saveSettings()
         }
+    }
+
+    /**
+     * Apply a mutation to the settings (via immer) and persist the result.
+     * The single write path — the declarative settings tab routes every
+     * control edit through here so persistence happens in exactly one place.
+     */
+    async updateSettings(mutator: (draft: Draft<PluginSettings>) => void) {
+        this.settings = produce(this.settings, mutator)
+        await this.saveSettings()
     }
 
     /**

@@ -300,6 +300,45 @@ These rules apply to **`id`**, **`name`**, and **`description`** in `manifest.js
 - Replace `window.confirm(...)` with a `Modal` subclass: `confirm()` blocks the UI thread, can't be themed, doesn't play with popout windows, and is forbidden by the scorecard.
 - Never give a `PluginSettingTab` subclass a method/property whose name collides with an Obsidian `SettingTab` base member — reserved as of API 1.13.0: `update`, `getSettingDefinitions`, `getControlValue`, `setControlValue`, `settingItems`, `icon` (plus long-standing `display`, `hide`, `containerEl`, `app`). A same-named helper silently **shadows** the framework method; e.g. `addSettingTab()` calls `tab.update()` with no args at registration, so a custom `update(mutator)` receives `undefined` and crashes (`[Immer] The first or second argument to 'produce' must be a function`, or any "expected a function" error). Name helpers distinctively (`mutateSettings`, `renderX`, …), and keep the `obsidian` dev types current so `noImplicitOverride` flags collisions at compile time.
 
+### Declarative settings (Obsidian 1.13+) — mandatory approach and traps
+
+This template declares its settings via `getSettingDefinitions()` (see
+`src/app/settings/settings-tab.ts`). Keep that approach. Every rule below cost
+a shipped bug the first time it was broken; `settings-guard.spec.ts` enforces
+the two statically-catchable ones.
+
+- **`getSettingDefinitions()` REPLACES `display()`.** Non-empty array means
+  `display()` is never called. No partial adoption: the whole settings UI is
+  declarative or none of it. Requires `minAppVersion` 1.13.0.
+- **A `render:` hook renders the ROW.** Write into `setting.settingEl` only
+  (drop `setting.infoEl` when the helper draws its own name/desc). Anything
+  written outside the row — `group.listEl`, siblings — is the framework's to
+  discard: the control is silently absent at runtime. Never call
+  `settingEl.remove()`. Staying inside the row also means the framework tears
+  the widget down on re-render, so re-renders cannot stack duplicates.
+- **`defaultValue` is the fallback for a RESOLVER returning undefined/null —
+  not for a cleared input.** On numeric controls it turns a cleared field into
+  a silent reset to the schema default. Declare none; let a bounds `validate`
+  refuse the cleared value inline.
+- **A row `action:` fires on the WHOLE row, not on a button.** Destructive
+  rows need their own confirmation modal.
+- **`onDelete(index)` indexes the LIVE list.** The framework re-indexes on
+  drag immediately, while a settings refresh waits on persistence. Resolve the
+  entity from the live index, never from a render-time snapshot.
+- **`setControlValue` MUST reject on failure.** Resolving tells the framework
+  the write landed, so the pane keeps showing a value that was never stored.
+  Rejecting rolls the control back to `getControlValue`'s answer.
+- **A nullable object cannot be a dot-path control key.** The path walks to
+  `null`, the write is refused, and the choice silently does not persist.
+- **Free wins:** `SettingDefinitionList` provides drag-to-reorder, delete and
+  add natively — delete hand-rolled arrow buttons, do not port them. Declared
+  `name`/`desc` are indexed by Obsidian's settings search.
+- **Acceptance is a live vault check.** Nothing in CI renders a settings pane.
+  Five broken controls once shipped through 2806 passing tests, clean types,
+  `--max-warnings 0` and two adversarial reviews. For ANY settings change,
+  open the settings pane in a real vault before calling it done — flag it for
+  manual verification per the "No UI self-verification" rule.
+
 ## Versioning & releases
 
 - Bump `version` in `manifest.json` (SemVer) and update `versions.json` to map plugin version → minimum app version.
