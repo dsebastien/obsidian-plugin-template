@@ -88,7 +88,7 @@ bun run tsc:watch
 Optionally, run tests in watch mode:
 
 ```bash
-bun test --watch
+bun run test:watch
 ```
 
 ### Code Quality
@@ -99,7 +99,7 @@ Before committing, ensure your code passes all checks:
 bun run format      # Format code
 bun run lint        # Check for lint errors
 bun run tsc         # Type check
-bun test            # Run tests
+bun run test        # Run tests (isolated)
 ```
 
 ### Commit Your Changes

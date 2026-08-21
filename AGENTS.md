@@ -51,7 +51,7 @@ A change is only "done" when **all** of the following hold:
 
 - `bun run tsc` passes with zero errors.
 - `bun run lint` passes with zero warnings (the repo is configured with `--max-warnings 0`).
-- `bun test` passes; new logic has new `.spec.ts` coverage next to the file it tests.
+- `bun run test` passes; new logic has new `.spec.ts` coverage next to the file it tests.
 - `bun run build` completes without errors.
 - The day's file in `documentation/history/` has been updated with what was done, decisions made, and any open questions.
 - If a plan in `documentation/plans/` drove the work, it has been updated or closed.
@@ -150,7 +150,7 @@ This is MANDATORY. The watch process catches type errors immediately as you edit
 Optionally, also run tests in watch mode:
 
 ```bash
-bun test --watch
+bun run test:watch
 ```
 
 After editing code, always run the formatter and linter:
@@ -167,7 +167,7 @@ Both commands are **MANDATORY** after code changes. Fix any lint errors before p
 Default to using Bun instead of Node.js.
 
 - Use `bun <file>` instead of `node <file>` or `ts-node <file>`
-- Use `bun test` instead of `jest` or `vitest`
+- Use `bun run test` instead of `jest` or `vitest` (the script adds `--isolate`; see Testing)
 - Use `bun build <file.html|file.ts|file.css>` instead of `webpack` or `esbuild`
 - Use `bun install` instead of `npm install` or `yarn install` or `pnpm install`
 - Use `bun run <script>` instead of `npm run <script>` or `yarn run <script>` or `pnpm run <script>`
@@ -176,7 +176,30 @@ Default to using Bun instead of Node.js.
 
 ## Testing
 
-Use `bun test` to run tests.
+**MANDATORY**: run tests with `bun run test`, not bare `bun test`.
+
+The script adds `--isolate`, which runs each test file in a fresh global object and
+module registry. This is a correctness requirement here, not a speed optimization.
+`bunfig.toml` preloads `src/test-setup.ts`, which calls `mock.module('obsidian', ...)`.
+Module mocks are global and persist across files in a worker, so without `--isolate`
+any spec that re-mocks a module silently corrupts every spec that runs after it. The
+resulting failures are order-dependent and read as flakiness.
+
+`--isolate` cannot be set in `bunfig.toml`; it only exists as a CLI flag. That is why
+it lives in the `test` script and why every caller (CI, release, agents) must go
+through `bun run test`.
+
+### Scaling the test suite
+
+Leave the flags below OFF until a plugin's suite is actually slow. On a small suite
+they cost more than they save; measure before adding one.
+
+| Flag               | Turn it on when                                        | Notes                                                                                                              |
+| ------------------ | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| `--parallel[=N]`   | the suite takes more than a few seconds                | Runs files across worker processes. Implies `--isolate`. Adds per-worker startup, so it is slower on small suites. |
+| `--shard=M/N`      | one CI job is the bottleneck AND you have a job matrix | Splitting a fast suite across runners is strictly worse: you pay runner startup N times.                           |
+| `--timings=<file>` | using `--parallel` or `--shard`                        | Balances shards by measured duration. Write it with `--update-timings`.                                            |
+| `--changed=main`   | the suite is slow and PRs touch a small slice          | Runs only files affected by the diff. Can report "no tests ran" on unrelated PRs.                                  |
 
 **MANDATORY**: All test files MUST use the `.spec.ts` extension (not `.test.ts`).
 

@@ -299,7 +299,7 @@ For the first release, **do not** use automated version bumping. Instead:
 ```bash
 bun run tsc
 bun run lint
-bun test
+bun run test
 bun run build
 ```
 

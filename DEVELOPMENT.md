@@ -90,13 +90,13 @@ Keep this running in a separate terminal to catch type errors as you code.
 ### Run Tests
 
 ```bash
-bun test
+bun run test
 ```
 
 Run tests in watch mode:
 
 ```bash
-bun test --watch
+bun run test:watch
 ```
 
 ### Linting and Formatting
@@ -150,7 +150,7 @@ If you prefer not to use the environment variable, manually copy these files to 
 | `bun run lint:fix`     | Fix ESLint errors                 |
 | `bun run format`       | Format with Prettier              |
 | `bun run format:check` | Check formatting                  |
-| `bun test`             | Run tests                         |
+| `bun run test`         | Run tests (isolated)              |
 | `bun run commit`       | Create a commit with Commitizen   |
 
 ## Troubleshooting
