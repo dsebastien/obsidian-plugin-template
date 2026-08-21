@@ -49,7 +49,10 @@ export class TemplatePlugin extends Plugin {
         let needToSaveSettings = false
 
         this.settings = produce(this.settings, (draft: Draft<PluginSettings>) => {
-            if (loadedSettings.enabled) {
+            // Strict comparison: loadData can return anything (older versions,
+            // hand-edited data.json) — a truthy non-boolean like "false" must
+            // not reach a boolean field.
+            if (typeof loadedSettings.enabled === 'boolean') {
                 draft.enabled = loadedSettings.enabled
             } else {
                 log('The loaded settings miss the [enabled] property', 'debug')
