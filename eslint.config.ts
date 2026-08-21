@@ -63,8 +63,16 @@ export default defineConfig([
             'no-prototype-builtins': 'off',
             // Allow confirm for delete confirmations
             'no-alert': 'off',
-            // Disable sentence case rule - it has false positives for already-correct text
-            'obsidianmd/ui/sentence-case': 'off'
+            // Never disable obsidianmd/* rules here: the community catalog
+            // reviewer runs its own ruleset against the git archive, so a
+            // local disable only hides the finding until submission.
+            // Brand names are the supported escape hatch for sentence-case.
+            'obsidianmd/ui/sentence-case': [
+                'error',
+                {
+                    brands: ['Knowii', 'X', 'GitHub Sponsors', 'Sébastien Dubois', 'dSebastien']
+                }
+            ]
         }
     }
 ])
