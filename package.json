@@ -88,9 +88,9 @@
         "fast-uri": "3.1.2",
         "flatted": "3.4.2",
         "yaml": "2.9.0",
-        "js-yaml": "4.2.0",
+        "js-yaml": "4.3.1",
         "tmp": "0.2.7",
-        "brace-expansion": "2.0.3",
+        "brace-expansion": "2.1.4",
         "minimatch": "3.1.5",
         "picomatch": "2.3.2",
         "ajv": "6.15.0"
