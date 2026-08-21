@@ -1,5 +1,22 @@
 # Release Notes
 
+## 2.8.0 (2026-08-21)
+
+### Features
+
+- **plugin:** add Knowii community to the what's new dialog and harden it
+- **plugin:** aggregate what's new dialogs across simultaneously updated plugins
+- **plugin:** show a what's new dialog once after plugin updates
+- **plugin:** show what's new in a tab instead of a modal dialog
+- **plugin:** surface support CTAs everywhere users can see them
+
+### Bug Fixes
+
+- **deps:** patch 5 high advisories pinned open by the overrides block
+- **plugin:** coordinate the what's new dialog via a shared window flag
+- **plugin:** keep template compatible with public Obsidian releases
+- **plugin:** raise minAppVersion to 1.8.7 for App.loadLocalStorage
+
 ## 2.7.0 (2026-07-17)
 
 ### Features

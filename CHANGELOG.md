@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.8.0](https://github.com/your-username/obsidian-my-plugin/compare/2.7.0...2.8.0) (2026-08-21)
+
+### Features
+
+* **plugin:** add Knowii community to the what's new dialog and harden it ([3d40cbb](https://github.com/your-username/obsidian-my-plugin/commit/3d40cbb09ff9c1892bbdf274d9fc0365167a54a9))
+* **plugin:** aggregate what's new dialogs across simultaneously updated plugins ([bf1879c](https://github.com/your-username/obsidian-my-plugin/commit/bf1879c6e159f770106ce67776283353aebbeef7))
+* **plugin:** show a what's new dialog once after plugin updates ([a84e722](https://github.com/your-username/obsidian-my-plugin/commit/a84e72200c8533c5f8ca5394bd4492daf73a5026))
+* **plugin:** show what's new in a tab instead of a modal dialog ([c9c8a9e](https://github.com/your-username/obsidian-my-plugin/commit/c9c8a9e5fa818c04d9eacd8509fccd46d9ec654f))
+* **plugin:** surface support CTAs everywhere users can see them ([741ecd9](https://github.com/your-username/obsidian-my-plugin/commit/741ecd94218b05e496391dd5d05b956482cf4a1e))
+
+### Bug Fixes
+
+* **deps:** patch 5 high advisories pinned open by the overrides block ([8ee9a86](https://github.com/your-username/obsidian-my-plugin/commit/8ee9a86a7a762ffaecada9890c418e80ae3ad36a))
+* **plugin:** coordinate the what's new dialog via a shared window flag ([acedee9](https://github.com/your-username/obsidian-my-plugin/commit/acedee9c5444186d0408cac9c65587b7439d7638))
+* **plugin:** keep template compatible with public Obsidian releases ([80a4512](https://github.com/your-username/obsidian-my-plugin/commit/80a45128bed163269df6742f2e8cb817f72d8c0e))
+* **plugin:** raise minAppVersion to 1.8.7 for App.loadLocalStorage ([27f600f](https://github.com/your-username/obsidian-my-plugin/commit/27f600f41b741470ad1fd56f59a182b9a69cd77d))
+
 ## [2.7.0](https://github.com/your-username/obsidian-my-plugin/compare/2.6.3...2.7.0) (2026-07-17)
 
 ### Features
@@ -78,6 +95,7 @@ All notable changes to this project will be documented in this file.
 ## [1.2.0](https://github.com/dsebastien/obsidian-plugin-template/compare/1.1.0...1.2.0) (2024-05-14)
 ## [1.1.0](https://github.com/dsebastien/obsidian-plugin-template/compare/1.0.0...1.1.0) (2024-05-13)
 ## 1.0.0 (2024-04-26)
+
 
 
 
