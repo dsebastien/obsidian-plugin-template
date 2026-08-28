@@ -65,6 +65,12 @@ You **cannot** self-verify UI behavior — Obsidian is a GUI app and agents do n
 - Use `bun run cm` (commitizen with `cz-customizable`) to build a valid message interactively. The type and scope list is in `.cz-config.cjs`.
 - Never bypass the commit hooks (no `--no-verify`, no `-n`). If a hook fails, fix the underlying problem.
 - Keep commits scoped: one logical change per commit.
+- The scope is one of `all`, `build`, `deps`, `docs`, `plugin`, `release` — enforced by
+  `scope-enum`, so anything else is rejected outright (`docs(css)` fails). Pick by what the
+  commit touches, not by the topic it is about: a documentation change about CSS is
+  `docs(all)`, not `docs(css)`. Use `docs(all)` for repo-wide documentation
+  (`AGENTS.md`, `README.md`, conventions) and `docs(plugin)` only when the docs are about
+  the plugin's own behaviour.
 
 ### Files to ignore
 
