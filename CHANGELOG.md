@@ -2,6 +2,53 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.0.0](https://github.com/your-username/obsidian-my-plugin/compare/2.8.0...3.0.0) (2026-08-28)
+
+### ⚠ BREAKING CHANGES
+
+* **plugin:** minAppVersion moves 1.8.7 -> 1.13.0.
+
+The settings tab is now declarative: getSettingDefinitions() replaces
+display() entirely (a non-empty array means display() is never called —
+there is no partial adoption). Obsidian owns navigation, focus and ARIA,
+and declared names/descriptions are indexed by the settings search.
+
+The template ships one of each shape as a worked example: a `control`
+toggle wired through getControlValue/setControlValue to a new
+Plugin.updateSettings() single write path, an `action` row, and a
+`render` group that stays inside its own settingEl.
+
+The port rules that each cost a shipped bug in the first fleet plugin to
+adopt this API are documented in AGENTS.md ("Declarative settings"), and
+the two statically-catchable ones are enforced by a new guard spec:
+render hooks writing into group.listEl, and settingEl.remove(). The
+guard strips comments first — docs may name the forbidden patterns, code
+may not use them — and was verified to catch a planted offender.
+
+Also: obsidian typings 1.12.0 -> 1.13.1 (public), which makes
+Plugin.settings a declared base member, so the field now carries
+`override`. Bun joins the lint globals (tests run under the Bun
+runtime; scripts/ was already lint-ignored).
+
+Acceptance for any future settings change is a live vault check —
+nothing in CI renders a settings pane. Flagged per the No UI
+self-verification rule: verify the settings pane of a plugin generated
+from this template in a real vault.
+
+### Features
+
+* **plugin:** declare settings via getSettingDefinitions (Obsidian 1.13) ([2575a89](https://github.com/your-username/obsidian-my-plugin/commit/2575a89a0787ccf32327083024ac9a5deb66894c))
+
+### Bug Fixes
+
+* **build:** inline the changelog via a define, and stop shrinking the brand list ([3ceff1d](https://github.com/your-username/obsidian-my-plugin/commit/3ceff1d437a4efcdce79b309b659bcca884ed25e))
+* **build:** survive the community catalog reviewer's archive build ([7e6cb3c](https://github.com/your-username/obsidian-my-plugin/commit/7e6cb3c2c81d98ef0202140aa05d8780dcf4ade4))
+* **deps:** drop the ajv override, bump fast-uri past its advisories ([4261dc6](https://github.com/your-username/obsidian-my-plugin/commit/4261dc68b1d3007446c0fc3279266b70be47ac0e))
+* **plugin:** keep the follow button, and stop the support block laying out sideways ([6191733](https://github.com/your-username/obsidian-my-plugin/commit/6191733426de0629e1f1599a8f6a7674a591d312))
+* **plugin:** persist settings before committing them to memory ([3d4f911](https://github.com/your-username/obsidian-my-plugin/commit/3d4f91193d64d6a41e80d06aa47a1899c2d2dfc0))
+* **plugin:** serialize settings writes — overlapping edits lost data ([5114a7c](https://github.com/your-username/obsidian-my-plugin/commit/5114a7c423eb4f875630ae293f060d12b9418efe))
+* **plugin:** strict boolean check when loading the enabled setting ([12363ad](https://github.com/your-username/obsidian-my-plugin/commit/12363ad8c18640c98afd49ae4c5e25f59f660e58))
+
 ## [2.8.0](https://github.com/your-username/obsidian-my-plugin/compare/2.7.0...2.8.0) (2026-08-21)
 
 ### Features
@@ -95,6 +142,7 @@ All notable changes to this project will be documented in this file.
 ## [1.2.0](https://github.com/dsebastien/obsidian-plugin-template/compare/1.1.0...1.2.0) (2024-05-14)
 ## [1.1.0](https://github.com/dsebastien/obsidian-plugin-template/compare/1.0.0...1.1.0) (2024-05-13)
 ## 1.0.0 (2024-04-26)
+
 
 
 
