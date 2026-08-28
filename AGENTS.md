@@ -558,6 +558,7 @@ The community-plugin reviewer runs a fixed set of lint rules against every submi
 
 ### CSS rules
 
+- **Rules that have to beat Obsidian's own must be unlayered.** Unlayered CSS wins over layered CSS regardless of specificity, and Obsidian's app styles are unlayered — so a rule inside `@layer components` loses to `.setting-item { display: flex }` however many times you double the class. If you wrap this stylesheet in `@layer`, keep the settings overrides outside it. Verify with `getComputedStyle` against a rendered pane; the build, types, linter and tests are all green with a rule that does nothing.
 - No hand-written `!important`. Bump specificity with a doubled-class selector (`.foo.foo`) — that goes from 0,1,0 to 0,2,0 and beats most Obsidian defaults (`.setting-item-control button` 0,1,1; `.modal-container .modal` 0,2,0).
 - Before removing `!important`, identify what the rule is fighting and verify in a live vault with `getComputedStyle()`. Inline styles always win — keep `!important` only when the source it beats is itself inline.
 - When `!important` is genuinely load-bearing (visibility toggles like `.lt-hidden` are the canonical example), restore it and add a `/* stylelint-disable-next-line declaration-no-important -- reason: … */` comment. The reviewer accepts descriptive disables.

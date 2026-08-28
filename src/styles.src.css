@@ -10,12 +10,17 @@
 }
 
 /* A declarative-settings `render:` hook draws into the row's own
-   `.setting-item`, which is a flex ROW. The support block is a stack of
-   full-width `.setting-item` children, so it needs the row turned back into
+   `.setting-item`, which Obsidian styles as a flex ROW. The support block is a
+   stack of full-width `.setting-item` children, so the row has to go back to
    block flow — otherwise heading, buttons and badge sit side by side.
-   Doubled class for specificity over the theme's own `.setting-item`. */
-.settings-stack.settings-stack {
-    @apply block;
+
+   This rule MUST stay unlayered. Unlayered CSS beats layered CSS whatever the
+   specificity, and Obsidian's own `.setting-item { display: flex }` is
+   unlayered. A plugin that wraps its stylesheet in `@layer components` will
+   find this computes to `flex` in a live vault no matter how many times the
+   class is doubled — verified the hard way with getComputedStyle. */
+.settings-stack {
+    display: block;
 }
 
 /* ========================================
