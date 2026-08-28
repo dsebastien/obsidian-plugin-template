@@ -3,6 +3,17 @@ import tseslint from 'typescript-eslint'
 import eslintConfigPrettier from 'eslint-config-prettier'
 import globals from 'globals'
 import obsidianmd from 'eslint-plugin-obsidianmd'
+// Passing `brands` REPLACES the plugin's default list rather than extending it
+// (see sentenceCaseUtil.js: `options?.brands ?? DEFAULT_BRANDS`). Listing only
+// this plugin's own names would therefore silently strip "Obsidian", "Git",
+// "Markdown", "GitHub", "Windows" and the other 40-odd defaults — and the
+// community catalog reviewer, which runs the plugin's own ruleset, would keep
+// enforcing every one of them. The loss shows up as findings you never see
+// locally, not as findings that go away.
+// Deep path because the package exports only its default plugin object; it is
+// pinned exactly, and a break here is a loud module-resolution error, never a
+// silent shrinking of the list.
+import { DEFAULT_BRANDS } from 'eslint-plugin-obsidianmd/dist/lib/rules/ui/brands.js'
 import { defineConfig } from 'eslint/config'
 
 export default defineConfig([
@@ -72,7 +83,17 @@ export default defineConfig([
             'obsidianmd/ui/sentence-case': [
                 'error',
                 {
-                    brands: ['Knowii', 'X', 'GitHub Sponsors', 'Sébastien Dubois', 'dSebastien']
+                    brands: [
+                        ...DEFAULT_BRANDS,
+                        // Author and funding links. Add this plugin's own
+                        // product names here; do NOT add ordinary UI words such
+                        // as 'Settings' — as a brand it makes every lowercase
+                        // occurrence a violation.
+                        'Knowii',
+                        'GitHub Sponsors',
+                        'Sébastien Dubois',
+                        'dSebastien'
+                    ]
                 }
             ]
         }

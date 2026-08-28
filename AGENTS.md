@@ -541,6 +541,7 @@ The community-plugin reviewer runs a fixed set of lint rules against every submi
 
 - `eslint-disable @typescript-eslint/no-explicit-any` is **forbidden** — the reviewer treats both the violation and the disable as an **error** (blocks the scorecard). Type properly instead: `typeof Chart` for dynamically-imported classes, widen your custom interface rather than `as any`, narrow `unknown` at the call site.
 - Every other `eslint-disable-next-line <rule>` requires a `-- reason` description.
+- **`obsidianmd/ui/sentence-case`: `brands` REPLACES the plugin's defaults, it does not extend them.** The rule reads `options?.brands ?? DEFAULT_BRANDS`, so listing only this plugin's own names drops the 46 built-in brands (`Obsidian`, `Git`, `Markdown`, `GitHub`, `Windows`, …). The catalog reviewer runs the plugin's own ruleset and keeps enforcing all of them, so the effect is findings you never see locally — not findings that go away. Always spread `DEFAULT_BRANDS` first. Never add an ordinary UI word (`Settings`) as a brand: it makes every lowercase occurrence of that word a violation.
 - `new Array(n)` leaks `any[]` — write `new Array<T>(n)` or `Array.from({ length: n }, () => …)`. `Array.from` is cleaner when each slot needs a fresh sub-array.
 - `Object.values(union)` returns `any[]` for union types — annotate the local as `unknown[]` and narrow at use.
 - Drop redundant `as T` casts after `instanceof T` narrowing.
@@ -561,6 +562,11 @@ The community-plugin reviewer runs a fixed set of lint rules against every submi
 
 - The reviewer flags every `console.*` call in shipped code. The template's `src/utils/log.ts` ships with its `console.*` lines commented out — re-enable only behind a `debugModeEnabled` settings toggle when you actually need verbose logs.
 - Route stray `console.error(...)` from catch blocks through `log(msg, 'error', err)` so the suppression stays centralized.
+
+### Build-time inlining
+
+- **CHANGELOG.md reaches the "What's new" view through a bundler `define`, not an import.** `import changelog from '../../CHANGELOG.md' with { type: 'text' }` is not resolvable on every Bun version, and the community catalog reviewer builds with one where it is not: the build fails there while succeeding locally. `scripts/build.ts` reads the file and substitutes `__PLUGIN_CHANGELOG__`; `src/app/whats-new.ts` declares the binding inline (not in a `.d.ts`, so `no-undef` sees it) and `typeof`-guards it for the test and dev runtimes, where nothing substitutes.
+- Keep CHANGELOG.md out of `.gitattributes` `export-ignore` regardless — the archive build still needs it to produce non-empty release notes.
 
 ### Release workflow
 
