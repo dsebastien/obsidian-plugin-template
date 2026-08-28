@@ -322,6 +322,12 @@ the two statically-catchable ones.
   refuse the cleared value inline.
 - **A row `action:` fires on the WHOLE row, not on a button.** Destructive
   rows need their own confirmation modal.
+  It also draws NO button, so a link row that used to have a CTA silently loses
+  it in the port — use a `render:` hook with `addButton` to keep one.
+- **A `render:` hook draws into `.setting-item`, which is a flex ROW.** Anything
+  that is a vertical stack of full-width rows (the shared support block is the
+  canonical case) needs the row put back into block flow, or its heading,
+  buttons and badge lay out side by side. `settings-stack` does that.
 - **`onDelete` decorates only plain list rows — `type: 'page'` entries get NO
   delete button.** A list of sub-pages silently loses its delete affordance;
   give each page an explicit "Remove" row (a warning-styled button in its own
