@@ -122,15 +122,21 @@ if [ -n "$(git status --porcelain)" ]; then
     exit 1
 fi
 
-# Pull latest changes
-print_step "Pulling latest changes from origin..."
-git pull origin "$CURRENT_BRANCH"
+# Pull latest changes. Skipped under --dry-run: a documented preview must not
+# mutate the checkout (a pull can fast-forward or merge the branch). The
+# calculated version may therefore be stale in a dry run if origin is ahead.
+if [ "$DRY_RUN" = true ]; then
+    print_warning "--dry-run: skipping git pull (preview must not mutate the checkout)."
+else
+    print_step "Pulling latest changes from origin..."
+    git pull origin "$CURRENT_BRANCH"
 
-# Check if git working directory is still clean after pull
-if [ -n "$(git status --porcelain)" ]; then
-    print_error "Error: Git working directory is not clean after pulling. Please resolve conflicts or issues first."
-    git status
-    exit 1
+    # Check if git working directory is still clean after pull
+    if [ -n "$(git status --porcelain)" ]; then
+        print_error "Error: Git working directory is not clean after pulling. Please resolve conflicts or issues first."
+        git status
+        exit 1
+    fi
 fi
 
 # Calculate suggested next version based on conventional commits
