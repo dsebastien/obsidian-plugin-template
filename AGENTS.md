@@ -364,6 +364,36 @@ the two statically-catchable ones.
 - Attach `manifest.json`, `main.js`, and `styles.css` (if present) to the release as individual assets.
 - After the initial release, follow the process to add/update your plugin in the community catalog as required.
 
+### Cutting a release
+
+`bun run release` drives the whole thing. It is interactive by default, and takes flags so
+it can run unattended — an agent should use those rather than reimplementing the script:
+
+```bash
+bun run release -- --yes                      # accept the calculated version
+bun run release -- --version 2.0.0 --yes      # pin the version
+bun run release -- --version 2.0.0 --dry-run  # preview; pushes nothing, dispatches nothing
+bun run release -- --help
+```
+
+The version is derived from the conventional commits since the last tag
+(`bun scripts/calculate-next-version.ts --verbose` shows the analysis). Confirm it before
+using `--yes`: a stray `feat!` in the range turns a patch into a major.
+
+Before releasing: push, then wait for CI to go **green**. The release workflow builds from
+what is on `main`, so dispatching while CI is still running means finding out whether the
+code was releasable only after the tag exists — and a tag is the one part of this that is
+awkward to take back.
+
+**The workflow runs twice, and the first success is not the release.** Run 1 (`prepare`)
+bumps the version files, regenerates `CHANGELOG.md`, commits, tags, and re-dispatches
+itself at the tag. Run 2 (`publish`) builds, attests and creates the GitHub release. In
+between, the tag exists but `gh release view <version>` still reports "release not found",
+which reads exactly like a failure and is not one. Wait for the second run.
+
+Afterwards: `git pull --ff-only` to bring the release commit back, then `bun run dev` to
+deploy the released build into a vault and confirm the new version number is running.
+
 ## Security, privacy, and compliance
 
 Follow Obsidian's **Developer Policies** and **Plugin Guidelines**. In particular:
