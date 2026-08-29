@@ -1,7 +1,14 @@
 import { describe, expect, test } from 'bun:test'
 import { regressions } from './rules-baseline'
 
-const floor = {
+type Floor = {
+    rules: Record<string, number>
+    maxWarnings: number
+    compilerOptions: Record<string, boolean>
+    types: string[]
+}
+
+const floor: Floor = {
     rules: { 'obsidianmd/no-tfile-tfolder-cast': 2, 'no-console': 1 },
     maxWarnings: 0,
     compilerOptions: { strict: true, noUncheckedIndexedAccess: true, skipLibCheck: false },
@@ -9,7 +16,7 @@ const floor = {
 }
 
 /** The baseline shape with only the named fields changed. */
-const drift = (patch: Partial<typeof floor>) => ({ ...floor, ...patch })
+const drift = (patch: Partial<Floor>): Floor => ({ ...floor, ...patch })
 
 describe('rule floor', () => {
     test('an unchanged config has no regressions', () => {

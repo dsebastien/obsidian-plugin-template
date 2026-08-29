@@ -88,7 +88,7 @@ const currentRules = async (files: string[]): Promise<Record<string, number>> =>
 
 const currentMaxWarnings = async (): Promise<number> => {
     const pkg = (await file('package.json').json()) as { scripts?: Record<string, string> }
-    const lint = pkg.scripts?.lint ?? ''
+    const lint = pkg.scripts?.['lint'] ?? ''
     const match = /--max-warnings[= ]+(\d+)/.exec(lint)
     // No flag at all means warnings pass silently, which is the worst case.
     return match?.[1] === undefined ? Number.POSITIVE_INFINITY : Number(match[1])
