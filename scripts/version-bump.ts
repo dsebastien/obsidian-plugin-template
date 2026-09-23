@@ -112,26 +112,81 @@ export function nextVersions(
 }
 
 /**
- * The release this one follows, read from git: manifest.json's version on
- * disk (the release script bumps it only at release time) and the floor that
- * release's tag shipped with. Null when there is no such tag yet, i.e. the
- * first release.
+ * git in `root`, never in a repository named by the environment: git sets
+ * GIT_DIR / GIT_INDEX_FILE / GIT_WORK_TREE for hooks and some worktree
+ * setups, and they would override `root`.
  */
-export async function readPreviousRelease(root = '.'): Promise<PreviousRelease | null> {
-    const { version } = await readManifest(root)
-    for (const tag of [version, `v${version}`]) {
-        const shown = await $`git show ${tag}:manifest.json`.cwd(root).quiet().nothrow()
-        if (shown.exitCode === 0) {
-            const tagged = JSON.parse(shown.stdout.toString()) as ManifestJson
-            return { version, minAppVersion: tagged.minAppVersion }
-        }
+export function gitIn(root: string) {
+    const env: Record<string, string | undefined> = { ...process.env }
+    for (const key of [
+        'GIT_DIR',
+        'GIT_INDEX_FILE',
+        'GIT_WORK_TREE',
+        'GIT_PREFIX',
+        'GIT_COMMON_DIR'
+    ]) {
+        delete env[key]
     }
-    return null
+    return (args: string[]) => $`git ${args}`.cwd(root).env(env).quiet().nothrow()
+}
+
+/**
+ * The release this one follows: the highest x.y.z tag below `targetVersion`,
+ * with the floor its manifest shipped. Null only when the repository has no
+ * release tag at all (the first release). Anything else that prevents
+ * reading it throws: a floor raise must never be skipped silently.
+ *
+ * Tags are the source, not manifest.json's version: a version bumped by hand,
+ * or a release commit pushed by a run that failed before tagging, would name
+ * a version with no release.
+ */
+export async function readPreviousRelease(
+    targetVersion: string,
+    root = '.'
+): Promise<PreviousRelease | null> {
+    assertReleaseVersion(targetVersion)
+    const git = gitIn(root)
+    const listed = await git(['tag', '--list'])
+    if (listed.exitCode !== 0) {
+        throw new Error(`git tag --list failed in ${root}: ${listed.stderr.toString().trim()}`)
+    }
+    // Obsidian installs a release by its exact tag, and release.yml only
+    // makes bare x.y.z tags, so only those count.
+    const tags = listed.stdout
+        .toString()
+        .split('\n')
+        .map((tag) => tag.trim())
+        .filter((tag) => parseVersion(tag) !== null)
+    if (tags.length === 0) {
+        return null
+    }
+    const earlier = tags.filter((tag) => compareVersions(tag, targetVersion) < 0)
+    if (earlier.length === 0) {
+        throw new Error(
+            `No release tag below ${targetVersion} although tags exist: ${tags.join(', ')}`
+        )
+    }
+    const version = earlier.reduce((a, b) => (compareVersions(a, b) >= 0 ? a : b))
+    const shown = await git(['show', `${version}:manifest.json`])
+    if (shown.exitCode !== 0) {
+        throw new Error(
+            `Cannot read manifest.json at tag ${version}: ${shown.stderr.toString().trim()}`
+        )
+    }
+    let tagged: Partial<ManifestJson>
+    try {
+        tagged = JSON.parse(shown.stdout.toString()) as Partial<ManifestJson>
+    } catch (error) {
+        throw new Error(`manifest.json at tag ${version} is not valid JSON: ${String(error)}`)
+    }
+    if (typeof tagged.minAppVersion !== 'string') {
+        throw new Error(`manifest.json at tag ${version} has no minAppVersion`)
+    }
+    return { version, minAppVersion: tagged.minAppVersion }
 }
 
 export async function bumpVersion(targetVersion: string, root = '.'): Promise<void> {
-    assertReleaseVersion(targetVersion)
-    const previous = await readPreviousRelease(root)
+    const previous = await readPreviousRelease(targetVersion, root)
 
     // Read and update manifest.json
     const manifest = await readManifest(root)
