@@ -73,7 +73,7 @@
         "cz-customizable": "^7.5.1",
         "eslint": "^9.36.0",
         "eslint-config-prettier": "^10.1.5",
-        "eslint-plugin-obsidianmd": "0.1.9",
+        "eslint-plugin-obsidianmd": "0.4.1",
         "globals": "17.0.0",
         "obsidian": "1.13.1",
         "prettier": "^3.6.2",

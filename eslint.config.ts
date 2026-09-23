@@ -16,10 +16,82 @@ import obsidianmd from 'eslint-plugin-obsidianmd'
 import { DEFAULT_BRANDS } from 'eslint-plugin-obsidianmd/dist/lib/rules/ui/brands.js'
 import { defineConfig } from 'eslint/config'
 
+// eslint-plugin-obsidianmd 0.4.x lowered these rules from error to warn in its
+// recommended preset. --max-warnings 0 would still fail on them, but the rule
+// floor (rules-baseline.json) guards the RESOLVED severity, and a warn is one
+// config edit away from being ignored. Keep them at error, with the preset's
+// own options, so upgrading the plugin never weakens the floor.
+const PRESET_WARNINGS_KEPT_AT_ERROR = [
+    'no-undef',
+    'no-implicit-globals',
+    'no-restricted-globals',
+    '@typescript-eslint/no-unused-expressions',
+    '@microsoft/sdl/no-document-write',
+    '@microsoft/sdl/no-inner-html',
+    'import/no-extraneous-dependencies',
+    'obsidianmd/commands/no-command-in-command-id',
+    'obsidianmd/commands/no-command-in-command-name',
+    'obsidianmd/commands/no-default-hotkeys',
+    'obsidianmd/commands/no-plugin-id-in-command-id',
+    'obsidianmd/commands/no-plugin-name-in-command-name',
+    'obsidianmd/vault/iterate',
+    'obsidianmd/hardcoded-config-path',
+    'obsidianmd/no-tfile-tfolder-cast',
+    'obsidianmd/object-assign',
+    'obsidianmd/prefer-abstract-input-suggest',
+    'obsidianmd/validate-manifest',
+    'obsidianmd/validate-license'
+] as const
+
+/** The obsidianmd preset's own entry for a rule, or undefined. */
+const presetEntry = (rule: string): unknown => {
+    let entry: unknown
+    for (const config of obsidianmd.configs['recommended']) {
+        const value = (config as { rules?: Record<string, unknown> }).rules?.[rule]
+        if (value !== undefined) {
+            entry = value
+        }
+    }
+    return entry
+}
+
+/**
+ * The preset's rules raised to error with their options intact. A rule the
+ * preset stops configuring is skipped rather than thrown on: this config also
+ * loads in the community catalog reviewer's environment, where a throw fails
+ * the whole review. rules:check reports the vanished rule instead.
+ */
+const keptAtError = Object.fromEntries(
+    PRESET_WARNINGS_KEPT_AT_ERROR.flatMap((rule) => {
+        const entry = presetEntry(rule)
+        if (entry === undefined) {
+            return []
+        }
+        return [
+            [rule, Array.isArray(entry) ? ['error', ...(entry.slice(1) as unknown[])] : 'error']
+        ]
+    })
+)
+
+/**
+ * The preset's restricted-import list for the core rule, which has no
+ * allowTypeImports option (the @typescript-eslint variant keeps honouring it).
+ */
+const coreRestrictedImports = (): unknown[] => {
+    const entry = presetEntry('@typescript-eslint/no-restricted-imports')
+    const paths: unknown[] = Array.isArray(entry) ? (entry.slice(1) as unknown[]) : []
+    return paths.map((path) => {
+        if (typeof path !== 'object' || path === null) {
+            return path
+        }
+        const { allowTypeImports: _ignored, ...rest } = path as Record<string, unknown>
+        return rest
+    })
+}
+
 export default defineConfig([
     eslint.configs.recommended,
     ...tseslint.configs.recommended,
-    // @ts-expect-error - obsidianmd types are incomplete but the config works at runtime
     ...obsidianmd.configs['recommended'],
     eslintConfigPrettier,
     {
@@ -55,7 +127,7 @@ export default defineConfig([
             }
         },
         rules: {
-            '@typescript-eslint/no-require-imports': 'off',
+            '@typescript-eslint/no-require-imports': 'error',
             // The community-plugin reviewer treats both the rule violation
             // and any `eslint-disable @typescript-eslint/no-explicit-any` as
             // an ERROR that blocks the scorecard. Catch locally as error,
@@ -65,17 +137,36 @@ export default defineConfig([
                 'error',
                 { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }
             ],
-            '@typescript-eslint/ban-ts-comment': 'off',
-            '@typescript-eslint/no-deprecated': 'off',
-            // These are too strict for dynamic plugin APIs
-            '@typescript-eslint/no-unsafe-call': 'off',
-            '@typescript-eslint/no-unsafe-member-access': 'off',
-            '@typescript-eslint/no-unsafe-assignment': 'off',
-            // Obsidian methods are dynamically added to prototypes
-            '@typescript-eslint/no-unsafe-enum-comparison': 'off',
-            'no-prototype-builtins': 'off',
-            // Allow confirm for delete confirmations
-            'no-alert': 'off',
+            // Nothing is switched off here: fix the finding, or scope a
+            // reasoned exemption to the one file that needs it and let the
+            // rule floor (rules-baseline.json) show it in review.
+            '@typescript-eslint/ban-ts-comment': 'error',
+            // Also reports Obsidian API deprecations. A replacement API may be
+            // newer than minAppVersion: check before swapping, and raise the
+            // floor (versions.json records it) only if the plugin needs it.
+            '@typescript-eslint/no-deprecated': 'error',
+            '@typescript-eslint/no-unsafe-call': 'error',
+            '@typescript-eslint/no-unsafe-member-access': 'error',
+            '@typescript-eslint/no-unsafe-assignment': 'error',
+            '@typescript-eslint/no-unsafe-enum-comparison': 'error',
+            // The preset switches both off; the core variant stays off only
+            // because @typescript-eslint/require-await replaces it.
+            '@typescript-eslint/require-await': 'error',
+            'prefer-const': 'error',
+            'no-prototype-builtins': 'error',
+            'no-alert': 'error',
+            ...keptAtError,
+            // 0.4.x switched these three off in favour of replacements, which
+            // stay on: no-console -> obsidianmd/rule-custom-message,
+            // no-restricted-imports -> @typescript-eslint/no-restricted-imports,
+            // import/no-nodejs-modules -> obsidianmd/no-nodejs-modules. The
+            // originals stay on too, so the floor never records an `off`.
+            'no-console': ['error', { allow: ['warn', 'error', 'debug'] }],
+            'no-restricted-imports': ['error', ...coreRestrictedImports()],
+            'import/no-nodejs-modules': 'error',
+            // The preset ships these two off; nothing here gets switched off.
+            'no-new-func': 'error',
+            'obsidianmd/prefer-active-doc': 'error',
             // Never disable obsidianmd/* rules here: the community catalog
             // reviewer runs its own ruleset against the git archive, so a
             // local disable only hides the finding until submission.

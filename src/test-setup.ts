@@ -75,13 +75,14 @@ void mock.module('obsidian', () => ({
         showAtPosition(_p: { x: number; y: number }) {}
     },
     // Network — the obsidian-fetch adapter wraps this
-    requestUrl: async (_params: unknown) => ({
-        status: 200,
-        headers: {},
-        text: '',
-        json: {},
-        arrayBuffer: new ArrayBuffer(0)
-    }),
+    requestUrl: (_params: unknown) =>
+        Promise.resolve({
+            status: 200,
+            headers: {},
+            text: '',
+            json: {},
+            arrayBuffer: new ArrayBuffer(0)
+        }),
     debounce: (fn: (...args: unknown[]) => unknown) => fn,
     setIcon: () => {}
 }))
