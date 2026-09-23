@@ -368,7 +368,7 @@ the two statically-catchable ones.
 
 ## Versioning & releases
 
-- Bump `version` in `manifest.json` (SemVer). `versions.json` gets a new line ONLY when the release needs a newer Obsidian (`minAppVersion`) than the latest recorded release, so it stays a short list of compatibility boundaries. `scripts/version-bump.ts` (`nextVersions`) enforces this during `bun run release`; do not add lines by hand. Keys must be real released versions in `x.y.z` form: a leftover key above the current version (e.g. a template's `2.0.1`) is ignored and should be deleted.
+- Bump `version` in `manifest.json` (SemVer). `versions.json` gets a new line ONLY when a release raises `minAppVersion`, and that line names the LAST release on the old floor (`"<last release>": "<its minAppVersion>"`), so users left behind by the raise get the newest release that still runs for them. Obsidian reads the file only when the latest manifest's floor is above the user's app, and installs the highest listed release whose floor the app meets. `scripts/version-bump.ts` does this during `bun run release`, reading the previous floor from the previous release's git tag; do not add lines by hand. Every key must be a real published release in `x.y.z` form.
 - Create a GitHub release whose tag exactly matches `manifest.json`'s `version`. Do not use a leading `v`.
 - Attach `manifest.json`, `main.js`, and `styles.css` (if present) to the release as individual assets.
 - After the initial release, follow the process to add/update your plugin in the community catalog as required.

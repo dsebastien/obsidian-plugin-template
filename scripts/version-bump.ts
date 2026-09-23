@@ -5,7 +5,7 @@
  */
 
 import { join } from 'node:path'
-import { file } from 'bun'
+import { $, file } from 'bun'
 
 export interface ManifestJson {
     id: string
@@ -66,59 +66,73 @@ export function compareVersions(a: string, b: string): number {
     return 0
 }
 
-/**
- * The minAppVersion of the most recent release recorded in versions.json
- * before targetVersion, or null when there is none.
- *
- * "Most recent" is the highest plugin version by numeric comparison, never
- * the last key: object order is not trustworthy after manual edits. Keys at
- * or above targetVersion are ignored — a leftover such as a template's
- * "2.0.1" in a 1.0.x plugin is not a release this one follows — and so are
- * keys that are not x.y.z, which Obsidian cannot install anyway.
- */
-export function latestMinAppVersion(versions: VersionsJson, targetVersion?: string): string | null {
-    let latest: string | null = null
-    for (const version of Object.keys(versions)) {
-        if (parseVersion(version) === null) {
-            continue
-        }
-        if (targetVersion !== undefined && compareVersions(version, targetVersion) >= 0) {
-            continue
-        }
-        if (latest === null || compareVersions(version, latest) > 0) {
-            latest = version
-        }
+/** Throws unless `version` is x.y.z, the only form Obsidian installs by tag. */
+export function assertReleaseVersion(version: string): void {
+    if (parseVersion(version) === null) {
+        throw new Error(`Expected an x.y.z version, got "${version}"`)
     }
-    return latest === null ? null : (versions[latest] ?? null)
+}
+
+/** The release this one follows: its version and the floor it shipped with. */
+export interface PreviousRelease {
+    version: string
+    minAppVersion: string
 }
 
 /**
- * versions.json after releasing targetVersion with this minAppVersion, or
+ * versions.json after a release whose minAppVersion is `minAppVersion`, or
  * null when the file must not change.
  *
- * A line is added only when this release needs a NEWER Obsidian than the
- * latest recorded release, so the file stays a short list of compatibility
- * boundaries. Obsidian reads it only when the latest manifest's minAppVersion
- * is above the user's app version, to pick an older release that still runs.
- * An unchanged or lowered floor therefore needs no line: the manifest already
- * covers everyone the release supports.
+ * Obsidian reads versions.json only when the latest manifest's minAppVersion
+ * is above the user's app version, and installs the highest listed release
+ * whose floor the app meets. So the file needs a line only when a release
+ * RAISES the floor, and that line names the LAST release on the old floor:
+ * users left behind by the raise then get the newest release that still runs
+ * for them. An unchanged or lowered floor adds nothing, and so does the first
+ * release (the manifest already covers everyone it supports).
  */
 export function nextVersions(
     versions: VersionsJson,
-    targetVersion: string,
+    previous: PreviousRelease | null,
     minAppVersion: string
 ): VersionsJson | null {
-    // Both must be x.y.z: Obsidian installs releases by exact tag and
-    // compares app versions numerically.
-    compareVersions(targetVersion, minAppVersion)
-    const latest = latestMinAppVersion(versions, targetVersion)
-    if (latest !== null && compareVersions(minAppVersion, latest) <= 0) {
+    assertReleaseVersion(minAppVersion)
+    if (previous === null) {
         return null
     }
-    return { ...versions, [targetVersion]: minAppVersion }
+    assertReleaseVersion(previous.version)
+    assertReleaseVersion(previous.minAppVersion)
+    if (compareVersions(minAppVersion, previous.minAppVersion) <= 0) {
+        return null
+    }
+    if (versions[previous.version] === previous.minAppVersion) {
+        return null
+    }
+    return { ...versions, [previous.version]: previous.minAppVersion }
+}
+
+/**
+ * The release this one follows, read from git: manifest.json's version on
+ * disk (the release script bumps it only at release time) and the floor that
+ * release's tag shipped with. Null when there is no such tag yet, i.e. the
+ * first release.
+ */
+export async function readPreviousRelease(root = '.'): Promise<PreviousRelease | null> {
+    const { version } = await readManifest(root)
+    for (const tag of [version, `v${version}`]) {
+        const shown = await $`git show ${tag}:manifest.json`.cwd(root).quiet().nothrow()
+        if (shown.exitCode === 0) {
+            const tagged = JSON.parse(shown.stdout.toString()) as ManifestJson
+            return { version, minAppVersion: tagged.minAppVersion }
+        }
+    }
+    return null
 }
 
 export async function bumpVersion(targetVersion: string, root = '.'): Promise<void> {
+    assertReleaseVersion(targetVersion)
+    const previous = await readPreviousRelease(root)
+
     // Read and update manifest.json
     const manifest = await readManifest(root)
     const { minAppVersion } = manifest
@@ -126,12 +140,14 @@ export async function bumpVersion(targetVersion: string, root = '.'): Promise<vo
     await writeManifest(manifest, root)
     console.log(`Updated manifest.json version to ${targetVersion}`)
 
-    const versions = nextVersions(await readVersions(root), targetVersion, minAppVersion)
-    if (versions !== null) {
+    const versions = nextVersions(await readVersions(root), previous, minAppVersion)
+    if (versions !== null && previous !== null) {
         await writeVersions(versions, root)
-        console.log(`Added ${targetVersion} -> ${minAppVersion} to versions.json`)
+        console.log(
+            `Added ${previous.version} -> ${previous.minAppVersion} to versions.json: the last release before the floor rises to ${minAppVersion}`
+        )
     } else {
-        console.log(`versions.json unchanged: ${minAppVersion} needs no newer Obsidian`)
+        console.log(`versions.json unchanged: ${minAppVersion} raises no floor`)
     }
 }
 
