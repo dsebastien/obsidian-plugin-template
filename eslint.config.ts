@@ -74,19 +74,17 @@ const keptAtError = Object.fromEntries(
 )
 
 /**
- * The preset's restricted-import list for the core rule, which has no
- * allowTypeImports option (the @typescript-eslint variant keeps honouring it).
+ * The preset's restricted-import list for the core rule. Entries that rely
+ * on allowTypeImports (moment) stay with the @typescript-eslint variant only:
+ * the core rule has no such option, so it would report the type-only import
+ * the message itself recommends.
  */
 const coreRestrictedImports = (): unknown[] => {
     const entry = presetEntry('@typescript-eslint/no-restricted-imports')
     const paths: unknown[] = Array.isArray(entry) ? (entry.slice(1) as unknown[]) : []
-    return paths.map((path) => {
-        if (typeof path !== 'object' || path === null) {
-            return path
-        }
-        const { allowTypeImports: _ignored, ...rest } = path as Record<string, unknown>
-        return rest
-    })
+    return paths.filter(
+        (path) => !(typeof path === 'object' && path !== null && 'allowTypeImports' in path)
+    )
 }
 
 export default defineConfig([
@@ -156,6 +154,13 @@ export default defineConfig([
             'no-prototype-builtins': 'error',
             'no-alert': 'error',
             ...keptAtError,
+            // keptAtError copies the preset's options, and 0.4.x allows short
+            // circuits and ternaries as statements. Before the upgrade both
+            // were errors; keep them errors.
+            '@typescript-eslint/no-unused-expressions': [
+                'error',
+                { allowShortCircuit: false, allowTernary: false, allowTaggedTemplates: false }
+            ],
             // 0.4.x switched these three off in favour of replacements, which
             // stay on: no-console -> obsidianmd/rule-custom-message,
             // no-restricted-imports -> @typescript-eslint/no-restricted-imports,
