@@ -63,6 +63,9 @@ void mock.module('obsidian', () => ({
         setWarning() {
             return this
         }
+        setDestructive() {
+            return this
+        }
         onClick(_cb: () => unknown) {
             return this
         }

@@ -4,7 +4,20 @@
 // isBuiltin('bun:test') is true, so obsidianmd/no-nodejs-modules misreads
 // every spec's bun:test import and lint fails with findings the reviewer
 // never raises. Say so plainly instead.
-if (process.versions.bun) {
+//
+// A desktop-only plugin is exempt: the preset turns the Node-module rules
+// off for it, so Bun and Node lint it the same way.
+import { readFileSync } from 'node:fs'
+
+const desktopOnly = (() => {
+    try {
+        return JSON.parse(readFileSync('manifest.json', 'utf8')).isDesktopOnly === true
+    } catch {
+        return false
+    }
+})()
+
+if (process.versions.bun && !desktopOnly) {
     console.error(
         'Lint needs Node on PATH (see .nvmrc); it is running under Bun ' +
             process.versions.bun +

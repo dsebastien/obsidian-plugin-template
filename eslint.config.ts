@@ -26,6 +26,10 @@ const PRESET_WARNINGS_KEPT_AT_ERROR = [
     'no-implicit-globals',
     'no-restricted-globals',
     '@typescript-eslint/no-unused-expressions',
+    // Carries moment, the one restricted import the core rule cannot hold
+    // (it needs allowTypeImports); at warn, a value import of moment would
+    // sit below the floor.
+    '@typescript-eslint/no-restricted-imports',
     '@microsoft/sdl/no-document-write',
     '@microsoft/sdl/no-inner-html',
     'import/no-extraneous-dependencies',

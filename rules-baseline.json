@@ -125,7 +125,7 @@
         "no-console": 2,
         "no-restricted-globals": 2,
         "no-restricted-imports": 2,
-        "@typescript-eslint/no-restricted-imports": 1,
+        "@typescript-eslint/no-restricted-imports": 2,
         "no-alert": 2,
         "@microsoft/sdl/no-document-write": 2,
         "@microsoft/sdl/no-inner-html": 2,
