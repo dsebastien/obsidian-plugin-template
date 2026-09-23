@@ -38,6 +38,57 @@ export async function writeVersions(versions: VersionsJson): Promise<void> {
     await Bun.write(versionsFile, JSON.stringify(versions, null, 4) + '\n')
 }
 
+/**
+ * The minAppVersion of the most recent release recorded in versions.json,
+ * or null for an empty file. "Most recent" is the highest plugin version by
+ * numeric semver comparison — object order is not trustworthy after manual
+ * edits.
+ */
+export function latestMinAppVersion(versions: VersionsJson): string | null {
+    let latest: string | null = null
+    for (const version of Object.keys(versions)) {
+        if (latest === null || compareVersions(version, latest) > 0) {
+            latest = version
+        }
+    }
+    return latest === null ? null : (versions[latest] ?? null)
+}
+
+function compareVersions(a: string, b: string): number {
+    const pa = a.split('.').map(Number)
+    const pb = b.split('.').map(Number)
+    for (let i = 0; i < Math.max(pa.length, pb.length); i += 1) {
+        const diff = (pa[i] ?? 0) - (pb[i] ?? 0)
+        if (diff !== 0) {
+            return diff
+        }
+    }
+    return 0
+}
+
+/**
+ * versions.json after releasing targetVersion with this minAppVersion, or
+ * null when the file must not change.
+ *
+ * A line is added only when this release needs a NEWER Obsidian than the
+ * latest recorded release, so the file stays a short list of compatibility
+ * boundaries. Obsidian reads it only when the latest manifest's minAppVersion
+ * is above the user's app version, to pick an older release that still runs.
+ * An unchanged or lowered floor therefore needs no line: the manifest already
+ * covers everyone the release supports.
+ */
+export function nextVersions(
+    versions: VersionsJson,
+    targetVersion: string,
+    minAppVersion: string
+): VersionsJson | null {
+    const latest = latestMinAppVersion(versions)
+    if (latest !== null && compareVersions(minAppVersion, latest) <= 0) {
+        return null
+    }
+    return { ...versions, [targetVersion]: minAppVersion }
+}
+
 export async function bumpVersion(targetVersion: string): Promise<void> {
     // Read and update manifest.json
     const manifest = await readManifest()
@@ -46,14 +97,12 @@ export async function bumpVersion(targetVersion: string): Promise<void> {
     await writeManifest(manifest)
     console.log(`Updated manifest.json version to ${targetVersion}`)
 
-    // Update versions.json if this minAppVersion is not already tracked
-    const versions = await readVersions()
-    if (!Object.values(versions).includes(minAppVersion)) {
-        versions[targetVersion] = minAppVersion
+    const versions = nextVersions(await readVersions(), targetVersion, minAppVersion)
+    if (versions !== null) {
         await writeVersions(versions)
         console.log(`Added ${targetVersion} -> ${minAppVersion} to versions.json`)
     } else {
-        console.log(`versions.json already contains minAppVersion ${minAppVersion}`)
+        console.log(`versions.json unchanged: ${minAppVersion} needs no newer Obsidian`)
     }
 }
 
