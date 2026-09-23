@@ -168,7 +168,12 @@ export default defineConfig([
             // originals stay on too, so the floor never records an `off`.
             'no-console': ['error', { allow: ['warn', 'error', 'debug'] }],
             'no-restricted-imports': ['error', ...coreRestrictedImports()],
-            'import/no-nodejs-modules': 'error',
+            // Mobile safety, so it follows the preset's own reading of the
+            // manifest: a desktop-only plugin (isDesktopOnly) may import Node
+            // modules, and the preset turns obsidianmd/no-nodejs-modules off
+            // for it. Every other plugin gets the core rule at error.
+            'import/no-nodejs-modules':
+                presetEntry('obsidianmd/no-nodejs-modules') === 'off' ? 'off' : 'error',
             // The preset ships these two off; nothing here gets switched off.
             'no-new-func': 'error',
             'obsidianmd/prefer-active-doc': 'error',
