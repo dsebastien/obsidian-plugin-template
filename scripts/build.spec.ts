@@ -96,7 +96,7 @@ describe('readChangelogDefine', () => {
         ].join('\n')
         await Bun.write(path, text)
 
-        const literal = (await readChangelogDefine(path)).__PLUGIN_CHANGELOG__ ?? ''
+        const literal = (await readChangelogDefine(path))['__PLUGIN_CHANGELOG__'] ?? ''
         // What the bundler substitutes must evaluate back to the file content.
         expect(JSON.parse(literal)).toBe(text)
         expect(new Function(`return ${literal}`)()).toBe(text)

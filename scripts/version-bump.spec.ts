@@ -29,8 +29,8 @@ describe('ManifestJson interface', () => {
             description: 'A test plugin'
         }
 
-        expect(manifest.author).toBe('Test Author')
-        expect(manifest.description).toBe('A test plugin')
+        expect(manifest['author']).toBe('Test Author')
+        expect(manifest['description']).toBe('A test plugin')
     })
 })
 
