@@ -11,7 +11,8 @@ import {
     SRC,
     STYLES_OUT,
     STYLES_SRC,
-    readChangelogDefine
+    readChangelogDefine,
+    sourcemapFor
 } from './build'
 
 describe('build constants', () => {
@@ -99,5 +100,16 @@ describe('readChangelogDefine', () => {
         // What the bundler substitutes must evaluate back to the file content.
         expect(JSON.parse(literal)).toBe(text)
         expect(new Function(`return ${literal}`)()).toBe(text)
+    })
+})
+
+describe('sourcemapFor', () => {
+    test('production uses the string form the older Bun of the catalog reviewer accepts', () => {
+        // Not `false`: that fails the reviewer's archive build (see build.ts).
+        expect(sourcemapFor(true)).toBe('none')
+    })
+
+    test('development keeps inline source maps', () => {
+        expect(sourcemapFor(false)).toBe('inline')
     })
 })
