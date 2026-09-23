@@ -170,7 +170,10 @@ Both commands are **MANDATORY** after code changes. Fix any lint errors before p
 
 ## Bun Runtime
 
-Default to using Bun instead of Node.js.
+Default to using Bun instead of Node.js, with one exception: ESLint runs under Node.
+
+- `bunfig.toml` sets `[run] bun = false`, so scripts with a `node` shebang (eslint, tsc, prettier, commitlint) run under Node, as the community catalog reviewer's lint does. Under Bun, `node:module` `isBuiltin('bun:test')` is true and `obsidianmd/no-nodejs-modules` misreads every spec's `bun:test` import.
+- Node must be on PATH (version in `.nvmrc`). Without it, `bun run lint` stops with a message instead of reporting findings the reviewer never raises. CI sets Node up from `.nvmrc`.
 
 - Use `bun <file>` instead of `node <file>` or `ts-node <file>`
 - Use `bun run test` instead of `jest` or `vitest` (the script adds `--isolate`; see Testing)
@@ -365,7 +368,7 @@ the two statically-catchable ones.
 
 ## Versioning & releases
 
-- Bump `version` in `manifest.json` (SemVer) and update `versions.json` to map plugin version → minimum app version.
+- Bump `version` in `manifest.json` (SemVer). `versions.json` gets a new line ONLY when the release needs a newer Obsidian (`minAppVersion`) than the latest recorded release, so it stays a short list of compatibility boundaries. `scripts/version-bump.ts` (`nextVersions`) enforces this during `bun run release`; do not add lines by hand. Keys must be real released versions in `x.y.z` form: a leftover key above the current version (e.g. a template's `2.0.1`) is ignored and should be deleted.
 - Create a GitHub release whose tag exactly matches `manifest.json`'s `version`. Do not use a leading `v`.
 - Attach `manifest.json`, `main.js`, and `styles.css` (if present) to the release as individual assets.
 - After the initial release, follow the process to add/update your plugin in the community catalog as required.
