@@ -163,6 +163,10 @@ describe('bumpVersion', () => {
     // at the real repository, and commits skip hooks.
     let root: string
 
+    // Each test spawns several real git processes; on a loaded CI runner
+    // that alone passed Bun's 5 s default (7.9 s seen in one repo's CI).
+    const GIT_TEST_TIMEOUT_MS = 60_000
+
     const git = async (...args: string[]) => {
         const { gitIn } = await import('./version-bump')
         const result = await gitIn(root)([
@@ -206,114 +210,171 @@ describe('bumpVersion', () => {
         await rm(root, { recursive: true, force: true })
     })
 
-    test('a raised floor records the last release before it, read from its tag', async () => {
-        const { bumpVersion } = await import('./version-bump')
-        await releaseTagged('0.6.0', '1.10.0')
-        await writeManifest({ version: '0.6.0', minAppVersion: '1.13.0' }) // raised during development
-        await bumpVersion('1.0.0', root)
-        const manifest = (await Bun.file(join(root, 'manifest.json')).json()) as { version: string }
-        expect(manifest.version).toBe('1.0.0')
-        expect(JSON.parse(await versionsText())).toEqual({ '0.2.4': '1.10.0', '0.6.0': '1.10.0' })
-    })
-
-    test('the previous release comes from the tags, not from a hand-bumped manifest', async () => {
-        const { bumpVersion } = await import('./version-bump')
-        await releaseTagged('0.5.0', '1.8.7')
-        await releaseTagged('0.6.0', '1.10.0')
-        await writeManifest({ version: '0.7.0', minAppVersion: '1.13.0' }) // no 0.7.0 release exists
-        await bumpVersion('1.0.0', root)
-        expect(JSON.parse(await versionsText())).toEqual({ '0.2.4': '1.10.0', '0.6.0': '1.10.0' })
-    })
-
-    test('a stale value for the previous release is corrected', async () => {
-        const { bumpVersion } = await import('./version-bump')
-        await Bun.write(join(root, 'versions.json'), JSON.stringify({ '0.6.0': '1.4.0' }))
-        await releaseTagged('0.6.0', '1.10.0')
-        await writeManifest({ version: '0.6.0', minAppVersion: '1.13.0' })
-        await bumpVersion('1.0.0', root)
-        expect(JSON.parse(await versionsText())).toEqual({ '0.6.0': '1.10.0' })
-    })
-
-    test('an unchanged floor leaves versions.json byte-identical', async () => {
-        const { bumpVersion } = await import('./version-bump')
-        await releaseTagged('0.6.0', '1.10.0')
-        const before = await versionsText()
-        await bumpVersion('0.6.1', root)
-        expect(await versionsText()).toBe(before)
-    })
-
-    test('a lowered floor leaves versions.json byte-identical', async () => {
-        const { bumpVersion } = await import('./version-bump')
-        await releaseTagged('0.6.0', '1.13.0')
-        await writeManifest({ version: '0.6.0', minAppVersion: '1.10.0' })
-        const before = await versionsText()
-        await bumpVersion('0.7.0', root)
-        expect(await versionsText()).toBe(before)
-    })
-
-    test('the first release (no tag at all) leaves versions.json byte-identical', async () => {
-        const { bumpVersion } = await import('./version-bump')
-        await writeManifest({ version: '0.0.0', minAppVersion: '1.13.0' })
-        const before = await versionsText()
-        await bumpVersion('0.1.0', root)
-        expect(await versionsText()).toBe(before)
-    })
-
-    test('a v-prefixed tag is not a release (Obsidian installs by the exact tag)', async () => {
-        const { bumpVersion } = await import('./version-bump')
-        await writeManifest({ version: '0.6.0', minAppVersion: '1.10.0' })
-        await git('add', '-A')
-        await git('commit', '-q', '--no-verify', '-m', 'v-tagged')
-        await git('tag', 'v0.6.0')
-        await writeManifest({ version: '0.6.0', minAppVersion: '1.13.0' })
-        const before = await versionsText()
-        await bumpVersion('1.0.0', root)
-        expect(await versionsText()).toBe(before)
-    })
-
-    test('a tagged manifest without minAppVersion fails loudly, naming the tag', async () => {
-        const { bumpVersion } = await import('./version-bump')
-        await Bun.write(join(root, 'manifest.json'), JSON.stringify({ id: 'x', version: '0.6.0' }))
-        await git('add', '-A')
-        await git('commit', '-q', '--no-verify', '-m', 'broken')
-        await git('tag', '0.6.0')
-        await expect(bumpVersion('1.0.0', root)).rejects.toThrow('tag 0.6.0 has no minAppVersion')
-    })
-
-    test('tags that are all above the release fail loudly', async () => {
-        const { bumpVersion } = await import('./version-bump')
-        await releaseTagged('2.0.0', '1.13.0')
-        await expect(bumpVersion('1.0.0', root)).rejects.toThrow('No release tag below 1.0.0')
-    })
-
-    test('outside a git repository it fails loudly instead of skipping the line', async () => {
-        const { bumpVersion } = await import('./version-bump')
-        const bare = await mkdtemp(join(tmpdir(), 'version-bump-nogit-'))
-        try {
-            await Bun.write(
-                join(bare, 'manifest.json'),
-                JSON.stringify({ version: '0.6.0', minAppVersion: '1.13.0' })
-            )
-            await Bun.write(join(bare, 'versions.json'), '{}')
-            await expect(bumpVersion('1.0.0', bare)).rejects.toThrow('git tag --list failed')
-        } finally {
-            await rm(bare, { recursive: true, force: true })
-        }
-    })
-
-    test('a GIT_DIR in the environment cannot redirect it to another repository', async () => {
-        const { readPreviousRelease } = await import('./version-bump')
-        await releaseTagged('0.6.0', '1.10.0')
-        const saved = process.env['GIT_DIR']
-        process.env['GIT_DIR'] = join(tmpdir(), 'no-such-repository')
-        try {
-            expect(await readPreviousRelease('1.0.0', root)).toEqual({
-                version: '0.6.0',
-                minAppVersion: '1.10.0'
+    test(
+        'a raised floor records the last release before it, read from its tag',
+        async () => {
+            const { bumpVersion } = await import('./version-bump')
+            await releaseTagged('0.6.0', '1.10.0')
+            await writeManifest({ version: '0.6.0', minAppVersion: '1.13.0' }) // raised during development
+            await bumpVersion('1.0.0', root)
+            const manifest = (await Bun.file(join(root, 'manifest.json')).json()) as {
+                version: string
+            }
+            expect(manifest.version).toBe('1.0.0')
+            expect(JSON.parse(await versionsText())).toEqual({
+                '0.2.4': '1.10.0',
+                '0.6.0': '1.10.0'
             })
-        } finally {
-            if (saved === undefined) delete process.env['GIT_DIR']
-            else process.env['GIT_DIR'] = saved
-        }
-    })
+        },
+        GIT_TEST_TIMEOUT_MS
+    )
+
+    test(
+        'the previous release comes from the tags, not from a hand-bumped manifest',
+        async () => {
+            const { bumpVersion } = await import('./version-bump')
+            await releaseTagged('0.5.0', '1.8.7')
+            await releaseTagged('0.6.0', '1.10.0')
+            await writeManifest({ version: '0.7.0', minAppVersion: '1.13.0' }) // no 0.7.0 release exists
+            await bumpVersion('1.0.0', root)
+            expect(JSON.parse(await versionsText())).toEqual({
+                '0.2.4': '1.10.0',
+                '0.6.0': '1.10.0'
+            })
+        },
+        GIT_TEST_TIMEOUT_MS
+    )
+
+    test(
+        'a stale value for the previous release is corrected',
+        async () => {
+            const { bumpVersion } = await import('./version-bump')
+            await Bun.write(join(root, 'versions.json'), JSON.stringify({ '0.6.0': '1.4.0' }))
+            await releaseTagged('0.6.0', '1.10.0')
+            await writeManifest({ version: '0.6.0', minAppVersion: '1.13.0' })
+            await bumpVersion('1.0.0', root)
+            expect(JSON.parse(await versionsText())).toEqual({ '0.6.0': '1.10.0' })
+        },
+        GIT_TEST_TIMEOUT_MS
+    )
+
+    test(
+        'an unchanged floor leaves versions.json byte-identical',
+        async () => {
+            const { bumpVersion } = await import('./version-bump')
+            await releaseTagged('0.6.0', '1.10.0')
+            const before = await versionsText()
+            await bumpVersion('0.6.1', root)
+            expect(await versionsText()).toBe(before)
+        },
+        GIT_TEST_TIMEOUT_MS
+    )
+
+    test(
+        'a lowered floor leaves versions.json byte-identical',
+        async () => {
+            const { bumpVersion } = await import('./version-bump')
+            await releaseTagged('0.6.0', '1.13.0')
+            await writeManifest({ version: '0.6.0', minAppVersion: '1.10.0' })
+            const before = await versionsText()
+            await bumpVersion('0.7.0', root)
+            expect(await versionsText()).toBe(before)
+        },
+        GIT_TEST_TIMEOUT_MS
+    )
+
+    test(
+        'the first release (no tag at all) leaves versions.json byte-identical',
+        async () => {
+            const { bumpVersion } = await import('./version-bump')
+            await writeManifest({ version: '0.0.0', minAppVersion: '1.13.0' })
+            const before = await versionsText()
+            await bumpVersion('0.1.0', root)
+            expect(await versionsText()).toBe(before)
+        },
+        GIT_TEST_TIMEOUT_MS
+    )
+
+    test(
+        'a v-prefixed tag is not a release (Obsidian installs by the exact tag)',
+        async () => {
+            const { bumpVersion } = await import('./version-bump')
+            await writeManifest({ version: '0.6.0', minAppVersion: '1.10.0' })
+            await git('add', '-A')
+            await git('commit', '-q', '--no-verify', '-m', 'v-tagged')
+            await git('tag', 'v0.6.0')
+            await writeManifest({ version: '0.6.0', minAppVersion: '1.13.0' })
+            const before = await versionsText()
+            await bumpVersion('1.0.0', root)
+            expect(await versionsText()).toBe(before)
+        },
+        GIT_TEST_TIMEOUT_MS
+    )
+
+    test(
+        'a tagged manifest without minAppVersion fails loudly, naming the tag',
+        async () => {
+            const { bumpVersion } = await import('./version-bump')
+            await Bun.write(
+                join(root, 'manifest.json'),
+                JSON.stringify({ id: 'x', version: '0.6.0' })
+            )
+            await git('add', '-A')
+            await git('commit', '-q', '--no-verify', '-m', 'broken')
+            await git('tag', '0.6.0')
+            await expect(bumpVersion('1.0.0', root)).rejects.toThrow(
+                'tag 0.6.0 has no minAppVersion'
+            )
+        },
+        GIT_TEST_TIMEOUT_MS
+    )
+
+    test(
+        'tags that are all above the release fail loudly',
+        async () => {
+            const { bumpVersion } = await import('./version-bump')
+            await releaseTagged('2.0.0', '1.13.0')
+            await expect(bumpVersion('1.0.0', root)).rejects.toThrow('No release tag below 1.0.0')
+        },
+        GIT_TEST_TIMEOUT_MS
+    )
+
+    test(
+        'outside a git repository it fails loudly instead of skipping the line',
+        async () => {
+            const { bumpVersion } = await import('./version-bump')
+            const bare = await mkdtemp(join(tmpdir(), 'version-bump-nogit-'))
+            try {
+                await Bun.write(
+                    join(bare, 'manifest.json'),
+                    JSON.stringify({ version: '0.6.0', minAppVersion: '1.13.0' })
+                )
+                await Bun.write(join(bare, 'versions.json'), '{}')
+                await expect(bumpVersion('1.0.0', bare)).rejects.toThrow('git tag --list failed')
+            } finally {
+                await rm(bare, { recursive: true, force: true })
+            }
+        },
+        GIT_TEST_TIMEOUT_MS
+    )
+
+    test(
+        'a GIT_DIR in the environment cannot redirect it to another repository',
+        async () => {
+            const { readPreviousRelease } = await import('./version-bump')
+            await releaseTagged('0.6.0', '1.10.0')
+            const saved = process.env['GIT_DIR']
+            process.env['GIT_DIR'] = join(tmpdir(), 'no-such-repository')
+            try {
+                expect(await readPreviousRelease('1.0.0', root)).toEqual({
+                    version: '0.6.0',
+                    minAppVersion: '1.10.0'
+                })
+            } finally {
+                if (saved === undefined) delete process.env['GIT_DIR']
+                else process.env['GIT_DIR'] = saved
+            }
+        },
+        GIT_TEST_TIMEOUT_MS
+    )
 })
