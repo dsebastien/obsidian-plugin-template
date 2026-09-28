@@ -135,6 +135,11 @@ jobs:
               if: steps.version.outputs.prepared != 'true'
               run: |
                   git add package.json versions.json manifest.json CHANGELOG.md docs/release-notes.md
+                  # The changelog step consumed the curated notes, if any: record
+                  # the removal so the next release does not reuse them.
+                  if git ls-files --error-unmatch NEXT_RELEASE.md >/dev/null 2>&1; then
+                    git add -u -- NEXT_RELEASE.md
+                  fi
                   git commit -m "chore(release): ${{ steps.version.outputs.version }}"
                   git push origin HEAD:${{ github.ref_name }}
 
