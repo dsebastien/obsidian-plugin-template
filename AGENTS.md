@@ -374,10 +374,13 @@ the three statically-catchable ones.
   deep-freezes what `produce` returns, including every subtree it shares with
   its base, so `produce(DEFAULT_SETTINGS, …)` freezes the exported constant
   (and its arrays) for the rest of the process. Later code or specs that touch
-  it fail with "Attempted to assign to readonly property", and only
-  `bun test --isolate` hides it. Produce from `createDefaultSettings()` (a
-  fresh object per call); keep `DEFAULT_SETTINGS` for reads
-  (`src/app/plugin.spec.ts` pins both).
+  it fail with "Attempted to assign to readonly property". The `test` script
+  runs `bun test --isolate`, which hides it, so `validate` and CI never see
+  it: only the `Object.isFrozen` assertions in `src/app/plugin.spec.ts` do.
+  Produce from `createDefaultSettings()`, a deep-fresh object per call: build
+  nested arrays and objects as new values, never `{ ...DEFAULT_SETTINGS }`
+  (the spread shares them, and they freeze again). Keep `DEFAULT_SETTINGS` for
+  reads.
 - **`setControlValue` MUST reject on failure.** Resolving tells the framework
   the write landed, so the pane keeps showing a value that was never stored.
   Rejecting rolls the control back to `getControlValue`'s answer.
@@ -514,7 +517,7 @@ override async onload() { }  // ✓ Must use 'override' keyword
 
 // 2. Uninitialized properties (TS2564)
 settings!: PluginSettings;  // ✓ Use definite assignment if initialized in onload
-settings: PluginSettings = DEFAULT_SETTINGS;  // ✓ Or initialize inline
+settings: PluginSettings = produce(createDefaultSettings(), () => {});  // ✓ Or initialize inline (never from DEFAULT_SETTINGS itself)
 
 // 3. Unchecked array access (noUncheckedIndexedAccess)
 const first = array[0];
@@ -839,6 +842,10 @@ async onload() {
   await this.saveData(this.settings);
 }
 ```
+
+`Object.assign` copies one level only: once settings are nested and go
+through Immer, start from `createDefaultSettings()` instead (see "Never
+`produce()` from the shared `DEFAULT_SETTINGS`").
 
 ### Register listeners safely
 

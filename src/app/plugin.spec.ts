@@ -13,8 +13,9 @@ describe('default settings', () => {
 
     test('loadSettings with no stored data never freezes the shared defaults', async () => {
         // Skip the constructor: its field initializer is the other test's case.
+        const settings = produce(createDefaultSettings(), () => {})
         const plugin = Object.assign(Object.create(TemplatePlugin.prototype) as TemplatePlugin, {
-            settings: produce(createDefaultSettings(), () => {}),
+            settings,
             loadData: (): Promise<unknown> => Promise.resolve(null)
         })
 
@@ -23,7 +24,7 @@ describe('default settings', () => {
         // Immer deep-freezes what produce returns, including subtrees shared
         // with its base: producing from DEFAULT_SETTINGS froze the constant
         // for the rest of the process.
-        expect(plugin.settings).toEqual(DEFAULT_SETTINGS)
+        expect(plugin.settings).toBe(settings)
         expect(Object.isFrozen(DEFAULT_SETTINGS)).toBe(false)
     })
 
