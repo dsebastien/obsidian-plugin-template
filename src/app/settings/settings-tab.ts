@@ -19,6 +19,12 @@ import { BUY_ME_A_COFFEE_URL, renderSupportSection } from '../ui/support-links'
  * - A `render:` hook renders the ROW. Write into `setting.settingEl` only;
  *   anything written outside it (e.g. `group.listEl`) is the framework's to
  *   discard, and the control simply does not appear.
+ * - `update()` re-runs a render hook on the SAME row and resets only its
+ *   control area. A hook that appends anywhere else in the row must return a
+ *   cleanup that removes what it added, or every refresh stacks a copy.
+ * - Obsidian builds the definitions only in `update()` and reuses them on
+ *   every opening. Anything read from outside the settings (another plugin's
+ *   state) belongs in a render hook, which each opening re-runs.
  * - `defaultValue` is the fallback for a RESOLVER returning undefined/null,
  *   NOT for a cleared input. Do not declare it on numeric controls; let a
  *   `validate` bounds-check refuse the cleared value inline.
@@ -73,7 +79,7 @@ export class TemplatePluginSettingTab extends PluginSettingTab {
                         name: 'Support',
                         // Not a setting — keep it out of the settings search.
                         searchable: false,
-                        render: (setting): void => {
+                        render: (setting): (() => void) => {
                             // Render INSIDE the row (settingEl), never into
                             // group.listEl — see the class docs above.
                             setting.infoEl.remove() // the section draws its own headings
@@ -82,9 +88,15 @@ export class TemplatePluginSettingTab extends PluginSettingTab {
                             // would lay its heading, buttons and badge out side
                             // by side.
                             setting.settingEl.addClass('settings-stack')
-                            renderSupportSection(setting.settingEl, (el) => {
+                            // In a wrapper removed by the returned cleanup:
+                            // update() re-runs this hook on the SAME row and
+                            // only resets the control area, so content appended
+                            // straight to settingEl would pile up.
+                            const blockEl = setting.settingEl.createDiv()
+                            renderSupportSection(blockEl, (el) => {
                                 this.renderBuyMeACoffeeBadge(el)
                             })
+                            return () => blockEl.remove()
                         }
                     }
                 ]
