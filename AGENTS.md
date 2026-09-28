@@ -314,7 +314,7 @@ These rules apply to **`id`**, **`name`**, and **`description`** in `manifest.js
 This template declares its settings via `getSettingDefinitions()` (see
 `src/app/settings/settings-tab.ts`). Keep that approach. Every rule below cost
 a shipped bug the first time it was broken; `settings-guard.spec.ts` enforces
-the two statically-catchable ones.
+the three statically-catchable ones.
 
 - **`getSettingDefinitions()` REPLACES `display()`.** Non-empty array means
   `display()` is never called. No partial adoption: the whole settings UI is
@@ -329,10 +329,12 @@ the two statically-catchable ones.
   cleared, but anything the hook appends elsewhere in the row (a support
   block, help text, a status line) stays and is appended again: every refresh
   stacks another copy. Render such content into a wrapper and return a
-  cleanup that removes it (`const el = setting.settingEl.createDiv(); …;
-return () => el.remove()`); Obsidian calls it before re-running the hook.
-  Verified in Obsidian 1.13.7, where the template's own Support block went
-  from 1 to 3 copies after two `update()` calls.
+  cleanup that removes it: create `el` with `setting.settingEl.createDiv()`,
+  draw into it, and `return () => el.remove()`. Obsidian calls the cleanup
+  before re-running the hook. Verified in Obsidian 1.13.7, where fleet
+  plugins using this template's Support row went from 1 to 3 copies after
+  two `update()` calls; a stacked editor also kept its stale copy on top,
+  whose Save wrote an outdated list.
 - **The definitions are built only in `update()` and reused on every
   opening.** Anything a definition captures from outside the settings (another
   plugin's state, e.g. which Starter Kit note types exist) is frozen at the
