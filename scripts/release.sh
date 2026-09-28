@@ -204,7 +204,7 @@ fi
 # Curated notes (NEXT_RELEASE.md) are checked here so a malformed file fails
 # before anything is dispatched, not halfway through the workflow.
 if ! NOTES_SOURCE=$(bun scripts/generate-changelog.ts --check-curated); then
-    print_error "Error: NEXT_RELEASE.md cannot be used as release notes (see above)."
+    print_error "Error: the release notes check failed (see above). Nothing was dispatched."
     exit 1
 fi
 

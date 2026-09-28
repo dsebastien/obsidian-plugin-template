@@ -103,8 +103,14 @@ export function consumeCuratedNotes(path = CURATED_NOTES_FILE): boolean {
  * The GitHub release body: the newest CHANGELOG.md section, cut by the same
  * parser the "What's new" tab uses, so the two surfaces show the same text.
  */
-export function extractReleaseBody(changelog: string): string {
-    return parseChangelogSections(changelog)[0]?.markdown ?? ''
+export function extractReleaseBody(changelog: string, version: string): string {
+    const newest = parseChangelogSections(changelog)[0]
+    if (newest?.version !== version) {
+        throw new Error(
+            `CHANGELOG.md's newest section is ${newest?.version ?? 'missing'}, not the released ${version}.`
+        )
+    }
+    return newest.markdown
 }
 
 export async function generateChangelog(): Promise<string> {
@@ -235,7 +241,8 @@ if (import.meta.main && process.argv.includes('--check-curated')) {
     console.log(CHECK_MESSAGES[await checkCuratedNotes()])
 } else if (import.meta.main && process.argv.includes('--release-body')) {
     // Printed for the release workflow, which appends the footer.
-    console.log(extractReleaseBody(await Bun.file('CHANGELOG.md').text()))
+    const version = process.argv[process.argv.indexOf('--release-body') + 1] ?? ''
+    console.log(extractReleaseBody(await Bun.file('CHANGELOG.md').text(), version))
 } else if (import.meta.main) {
     console.log('Generating changelog...')
     await generateChangelog()

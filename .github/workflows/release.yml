@@ -93,7 +93,7 @@ jobs:
                   if [ "$(git log -1 --format=%s)" = "chore(release): $VERSION" ]; then
                     echo "HEAD is already the release commit for $VERSION; skipping bump steps."
                     echo "prepared=true" >> $GITHUB_OUTPUT
-                  elif git log --format=%s -200 | grep -Fxq "chore(release): $VERSION"; then
+                  elif [ -n "$(git log --format=%s -200 | grep -Fx "chore(release): $VERSION")" ]; then
                     # The release commit exists but the branch moved on. A new
                     # bump would write a second section for this version, from
                     # the generated list (the curated notes were consumed).
@@ -217,7 +217,7 @@ jobs:
                   # (body_path) rather than a step output: curated notes are free
                   # prose, and a heredoc delimiter line inside them would end
                   # the output early.
-                  bun scripts/generate-changelog.ts --release-body > release-body.md
+                  bun scripts/generate-changelog.ts --release-body "${{ steps.version.outputs.version }}" > release-body.md
                   printf '\n---\n\n' >> release-body.md
                   cat .github/release-footer.md >> release-body.md
 

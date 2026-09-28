@@ -127,7 +127,8 @@ describe('applyCuratedNotes', () => {
         ['## Highlights', 'use ### or deeper'],
         ['# Title', 'use ### or deeper'],
         ['  ## Indented', 'use ### or deeper'],
-        ['##', 'use ### or deeper']
+        ['##', 'use ### or deeper'],
+        ['```\n# c\n```\n## After a closed fence', 'use ### or deeper']
     ])('refuses %p', (notes, reason) => {
         expect(() => applyCuratedNotes(generated, `${notes}\n\n- x`)).toThrow(
             new RegExp(`^NEXT_RELEASE\\.md: .*${reason}`)
@@ -138,6 +139,17 @@ describe('applyCuratedNotes', () => {
         const notes =
             '### Fixed\n\n#### Detail\n\n```bash\n# install\n## also a comment\n```\n\n- Tag #inbox kept.'
         expect(applyCuratedNotes(generated, notes)).toContain(notes)
+    })
+
+    test('a fence closes only on its own marker', () => {
+        const notes = '~~~\n```\n## inside\n~~~'
+        expect(applyCuratedNotes(generated, notes)).toContain(notes)
+        expect(() => applyCuratedNotes(generated, '````\n```\n````\n## out')).toThrow(
+            /use ### or deeper/
+        )
+        expect(() => applyCuratedNotes(generated, '```\n~~~\n```\n## out')).toThrow(
+            /use ### or deeper/
+        )
     })
 
     test('refuses a generated entry without a version header', () => {
@@ -151,12 +163,18 @@ describe('both surfaces show the curated section', () => {
 
     test("the release body and the What's new tab carry the same text", () => {
         const text = changelog('### New\n\n- Past view of any note.\n\n```bash\n# install\n```')
-        const body = extractReleaseBody(text)
+        const body = extractReleaseBody(text, '1.3.0')
         const tab = extractReleaseNotes(text, '1.3.0', '1.2.0')
         expect(body).toContain('Past view of any note.')
         expect(body).toContain('# install')
         expect(body).not.toContain('older')
         expect(tab).toContain(body.split('\n').slice(1).join('\n').trim())
+    })
+
+    test('the release body refuses a changelog whose newest section is another version', () => {
+        expect(() => extractReleaseBody(changelog('- x'), '1.3.1')).toThrow(
+            /newest section is 1\.3\.0/
+        )
     })
 })
 
@@ -187,6 +205,6 @@ describe('curated notes file', () => {
         writeFileSync(path, '- x')
         expect(await checkCuratedNotes(path)).toBe('curated')
         writeFileSync(path, '## Bad')
-        expect(checkCuratedNotes(path)).rejects.toThrow(/use ### or deeper/)
+        await expect(checkCuratedNotes(path)).rejects.toThrow(/use ### or deeper/)
     })
 })
