@@ -1,9 +1,15 @@
-import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
-import { unlinkSync, writeFileSync } from 'node:fs'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'bun:test'
+import { existsSync, mkdtempSync, rmSync, unlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { extractReleaseNotes } from '../src/app/utils/release-notes'
-import { applyCuratedNotes } from './generate-changelog'
+import {
+    applyCuratedNotes,
+    checkCuratedNotes,
+    consumeCuratedNotes,
+    extractReleaseBody,
+    readCuratedNotes
+} from './generate-changelog'
 
 /**
  * Written outside the repo, under a name unique to this process.
@@ -110,29 +116,77 @@ describe('applyCuratedNotes', () => {
         expect(entry).not.toContain('catalog reviewer')
     })
 
-    test("the curated section is what the What's new tab extracts", () => {
-        const changelog = `# Changelog\n\n${applyCuratedNotes(generated, '### New\n\n- Past view of any note.')}\n## [1.2.0](x) (2026-09-01)\n\n- older\n`
-        const notes = extractReleaseNotes(changelog, '1.3.0', '1.2.0')
-        expect(notes).toContain('Past view of any note.')
-        expect(notes).not.toContain('older')
+    test('keeps a header-only generated entry whole (a release of chore commits)', () => {
+        const entry = applyCuratedNotes('## [1.3.1](x) (2026-09-28)', '- Fixed.')
+        expect(entry).toBe('## [1.3.1](x) (2026-09-28)\n\n- Fixed.\n')
     })
 
-    test.each(['## Highlights', '# Title', '##'])(
-        'refuses a %p heading, which would split the release section',
-        (heading) => {
-            expect(() => applyCuratedNotes(generated, `${heading}\n\n- x`)).toThrow(
-                /NEXT_RELEASE\.md: use ### or deeper headings/
-            )
-        }
-    )
+    test.each([
+        ['### 1.2.0 users: migration', 'version heading'],
+        ['```md\n## [1.2.0] in a fence\n```', 'version heading'],
+        ['## Highlights', 'use ### or deeper'],
+        ['# Title', 'use ### or deeper'],
+        ['  ## Indented', 'use ### or deeper'],
+        ['##', 'use ### or deeper']
+    ])('refuses %p', (notes, reason) => {
+        expect(() => applyCuratedNotes(generated, `${notes}\n\n- x`)).toThrow(
+            new RegExp(`^NEXT_RELEASE\\.md: .*${reason}`)
+        )
+    })
 
-    test('accepts deeper headings and hashes that are not headings', () => {
-        const entry = applyCuratedNotes(generated, '### Fixed\n\n#### Detail\n\n- Tag #inbox kept.')
-        expect(entry).toContain('#### Detail')
-        expect(entry).toContain('Tag #inbox kept.')
+    test('accepts deeper headings, shell comments in fences and hashes in prose', () => {
+        const notes =
+            '### Fixed\n\n#### Detail\n\n```bash\n# install\n## also a comment\n```\n\n- Tag #inbox kept.'
+        expect(applyCuratedNotes(generated, notes)).toContain(notes)
     })
 
     test('refuses a generated entry without a version header', () => {
         expect(() => applyCuratedNotes('### Features\n\n* x\n', '- y')).toThrow(/no version header/)
+    })
+})
+
+describe('both surfaces show the curated section', () => {
+    const changelog = (notes: string): string =>
+        `# Changelog\n\n${applyCuratedNotes('## [1.3.0](x) (2026-09-28)\n\n* raw\n', notes)}\n## [1.2.0](x) (2026-09-01)\n\n- older\n`
+
+    test("the release body and the What's new tab carry the same text", () => {
+        const text = changelog('### New\n\n- Past view of any note.\n\n```bash\n# install\n```')
+        const body = extractReleaseBody(text)
+        const tab = extractReleaseNotes(text, '1.3.0', '1.2.0')
+        expect(body).toContain('Past view of any note.')
+        expect(body).toContain('# install')
+        expect(body).not.toContain('older')
+        expect(tab).toContain(body.split('\n').slice(1).join('\n').trim())
+    })
+})
+
+describe('curated notes file', () => {
+    let dir = ''
+    let path = ''
+    beforeEach(() => {
+        dir = mkdtempSync(join(tmpdir(), 'curated-notes-'))
+        path = join(dir, 'NEXT_RELEASE.md')
+    })
+    afterEach(() => {
+        rmSync(dir, { recursive: true, force: true })
+    })
+
+    test('is consumed once, so the next release does not repeat it', async () => {
+        writeFileSync(path, '- x')
+        expect(await readCuratedNotes(path)).toBe('- x')
+        expect(consumeCuratedNotes(path)).toBe(true)
+        expect(existsSync(path)).toBe(false)
+        expect(await readCuratedNotes(path)).toBeNull()
+        expect(consumeCuratedNotes(path)).toBe(false)
+    })
+
+    test('is reported as curated, empty or absent before dispatch', async () => {
+        expect(await checkCuratedNotes(path)).toBe('generated')
+        writeFileSync(path, ' \n')
+        expect(await checkCuratedNotes(path)).toBe('empty')
+        writeFileSync(path, '- x')
+        expect(await checkCuratedNotes(path)).toBe('curated')
+        writeFileSync(path, '## Bad')
+        expect(checkCuratedNotes(path)).rejects.toThrow(/use ### or deeper/)
     })
 })

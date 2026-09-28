@@ -10,8 +10,9 @@
  * disagree. Without the file, the generated list is used as before.
  */
 
-import { unlinkSync } from 'node:fs'
+import { existsSync, unlinkSync } from 'node:fs'
 import { $ } from 'bun'
+import { parseChangelogSections, VERSION_HEADING_REGEX } from '../src/app/utils/release-notes'
 
 /** Hand-written notes for the next release, consumed by the release. */
 export const CURATED_NOTES_FILE = 'NEXT_RELEASE.md'
@@ -23,24 +24,49 @@ All notable changes to this project will be documented in this file.
 `
 
 /**
+ * Why the curated notes cannot be used, or null when they can.
+ *
+ * Both readers of CHANGELOG.md (the in-app "What's new" tab and the GitHub
+ * release body) split it with `parseChangelogSections`, so a line that parser
+ * reads as a version heading would end the release's section early, fenced
+ * code included (the parser does not know about fences). Such a line is
+ * refused anywhere. Outside fences, `#` and `##` headings are refused too:
+ * they would outrank the release's own `##` version heading.
+ */
+export function curatedNotesProblem(curated: string): string | null {
+    let fence: string | null = null
+    for (const line of curated.split('\n')) {
+        if (VERSION_HEADING_REGEX.test(line)) {
+            return `"${line}" reads as a version heading and would split the release section`
+        }
+        const marker = /^\s{0,3}(`{3,}|~{3,})/.exec(line)?.[1]
+        if (marker !== undefined) {
+            if (fence === null) {
+                fence = marker
+            } else if (marker[0] === fence[0] && marker.length >= fence.length) {
+                fence = null
+            }
+            continue
+        }
+        if (fence === null && /^\s{0,3}#{1,2}(\s|$)/.test(line)) {
+            return `"${line}": use ### or deeper headings under the release's own heading`
+        }
+    }
+    return null
+}
+
+/**
  * The CHANGELOG.md entry for a release: the generated version header, followed
  * by the curated notes when there are any, else the generated commit list.
- *
- * Curated notes may use `###` and deeper headings only. A `#` or `##` line
- * would end the release's section early: the "What's new" tab and the GitHub
- * release body both cut CHANGELOG.md at `## ` lines, so such a note would ship
- * truncated. It is refused instead.
  */
 export function applyCuratedNotes(generatedEntry: string, curated: string | null): string {
     const notes = curated?.trim() ?? ''
     if (notes === '') {
         return generatedEntry
     }
-    const offending = notes.split('\n').find((line) => /^#{1,2}(\s|$)/.test(line))
-    if (offending !== undefined) {
-        throw new Error(
-            `${CURATED_NOTES_FILE}: use ### or deeper headings; "${offending}" would split the release section.`
-        )
+    const problem = curatedNotesProblem(notes)
+    if (problem !== null) {
+        throw new Error(`${CURATED_NOTES_FILE}: ${problem}.`)
     }
     const entry = generatedEntry.trim()
     const headerEnd = entry.indexOf('\n')
@@ -49,6 +75,36 @@ export function applyCuratedNotes(generatedEntry: string, curated: string | null
         throw new Error(`Generated changelog entry has no version header: "${header}"`)
     }
     return `${header}\n\n${notes}\n`
+}
+
+/**
+ * Read the curated notes, or null when there are none. Removal is separate
+ * (`consumeCuratedNotes`) so the file survives any failure before CHANGELOG.md
+ * is written.
+ */
+export async function readCuratedNotes(path = CURATED_NOTES_FILE): Promise<string | null> {
+    const file = Bun.file(path)
+    return (await file.exists()) ? await file.text() : null
+}
+
+/**
+ * Remove the consumed notes so the next release does not repeat them. The
+ * release commit records the removal.
+ */
+export function consumeCuratedNotes(path = CURATED_NOTES_FILE): boolean {
+    if (!existsSync(path)) {
+        return false
+    }
+    unlinkSync(path)
+    return true
+}
+
+/**
+ * The GitHub release body: the newest CHANGELOG.md section, cut by the same
+ * parser the "What's new" tab uses, so the two surfaces show the same text.
+ */
+export function extractReleaseBody(changelog: string): string {
+    return parseChangelogSections(changelog)[0]?.markdown ?? ''
 }
 
 export async function generateChangelog(): Promise<string> {
@@ -70,8 +126,7 @@ export async function generateChangelog(): Promise<string> {
 
     // Generate new changelog entry to stdout
     const generatedEntry = await $`bunx conventional-changelog -p conventionalcommits -r 1`.text()
-    const curatedFile = Bun.file(CURATED_NOTES_FILE)
-    const curated = (await curatedFile.exists()) ? await curatedFile.text() : null
+    const curated = await readCuratedNotes()
     const newEntry = applyCuratedNotes(generatedEntry, curated)
 
     // Combine header + new entry + existing content
@@ -83,10 +138,7 @@ export async function generateChangelog(): Promise<string> {
 
     // Write the combined content
     await Bun.write('CHANGELOG.md', finalContent)
-    if (curated !== null) {
-        // Consumed: the next release starts without notes until someone writes
-        // them, instead of silently repeating these.
-        unlinkSync(CURATED_NOTES_FILE)
+    if (consumeCuratedNotes()) {
         console.log(`Used ${CURATED_NOTES_FILE} as the release notes, and removed it.`)
     }
 
@@ -161,21 +213,29 @@ export async function syncToDocsReleaseNotes(): Promise<void> {
  * before dispatching rather than in the workflow. Returns what the release
  * will use.
  */
-export async function checkCuratedNotes(): Promise<'curated' | 'generated'> {
-    const file = Bun.file(CURATED_NOTES_FILE)
-    const curated = (await file.exists()) ? await file.text() : null
+export async function checkCuratedNotes(
+    path = CURATED_NOTES_FILE
+): Promise<'curated' | 'empty' | 'generated'> {
+    const curated = await readCuratedNotes(path)
     applyCuratedNotes('## check\n', curated)
-    return curated?.trim() ? 'curated' : 'generated'
+    if (curated === null) {
+        return 'generated'
+    }
+    return curated.trim() ? 'curated' : 'empty'
 }
+
+const CHECK_MESSAGES = {
+    curated: `Release notes: curated, from ${CURATED_NOTES_FILE}.`,
+    empty: `Release notes: generated from commit subjects (${CURATED_NOTES_FILE} is empty; the release removes it).`,
+    generated: `Release notes: generated from commit subjects (no ${CURATED_NOTES_FILE}).`
+} as const
 
 // Only run if executed directly
 if (import.meta.main && process.argv.includes('--check-curated')) {
-    const source = await checkCuratedNotes()
-    console.log(
-        source === 'curated'
-            ? `Release notes: curated, from ${CURATED_NOTES_FILE}.`
-            : `Release notes: generated from commit subjects (no ${CURATED_NOTES_FILE}).`
-    )
+    console.log(CHECK_MESSAGES[await checkCuratedNotes()])
+} else if (import.meta.main && process.argv.includes('--release-body')) {
+    // Printed for the release workflow, which appends the footer.
+    console.log(extractReleaseBody(await Bun.file('CHANGELOG.md').text()))
 } else if (import.meta.main) {
     console.log('Generating changelog...')
     await generateChangelog()
