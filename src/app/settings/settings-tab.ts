@@ -20,8 +20,9 @@ import { BUY_ME_A_COFFEE_URL, renderSupportSection } from '../ui/support-links'
  *   anything written outside it (e.g. `group.listEl`) is the framework's to
  *   discard, and the control simply does not appear.
  * - `update()` re-runs a render hook on the SAME row and resets only its
- *   control area. A hook that appends anywhere else in the row must return a
- *   cleanup that removes what it added, or every refresh stacks a copy.
+ *   name, description and control area. A hook that appends anywhere else in
+ *   the row must return a cleanup that removes what it added, or every
+ *   refresh stacks a copy.
  * - Obsidian builds the definitions only in `update()` and reuses them on
  *   every opening. Anything read from outside the settings (another plugin's
  *   state) belongs in a render hook, which each opening re-runs.
@@ -90,7 +91,7 @@ export class TemplatePluginSettingTab extends PluginSettingTab {
                             setting.settingEl.addClass('settings-stack')
                             // In a wrapper removed by the returned cleanup:
                             // update() re-runs this hook on the SAME row and
-                            // only resets the control area, so content appended
+                            // only resets name, description and control area, so content appended
                             // straight to settingEl would pile up.
                             const blockEl = setting.settingEl.createDiv()
                             renderSupportSection(blockEl, (el) => {
