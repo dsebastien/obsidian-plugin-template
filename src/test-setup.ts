@@ -17,6 +17,10 @@ void mock.module('obsidian', () => ({
     App: class App {},
     TFile: class TFile {},
     Plugin: class Plugin {},
+    // The What's new view (reached from plugin.ts) extends ItemView and
+    // renders with MarkdownRenderer.
+    ItemView: class ItemView {},
+    MarkdownRenderer: { render: async () => {} },
     PluginSettingTab: class PluginSettingTab {},
     Setting: class Setting {},
     MarkdownView: class MarkdownView {},

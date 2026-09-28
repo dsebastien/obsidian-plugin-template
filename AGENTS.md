@@ -370,6 +370,14 @@ the three statically-catchable ones.
   await make the second commit silently drop the first edit. Chain them so
   each mutation derives from the previous committed state (see
   `src/app/plugin.ts`).
+- **Never `produce()` from the shared `DEFAULT_SETTINGS`.** Immer
+  deep-freezes what `produce` returns, including every subtree it shares with
+  its base, so `produce(DEFAULT_SETTINGS, …)` freezes the exported constant
+  (and its arrays) for the rest of the process. Later code or specs that touch
+  it fail with "Attempted to assign to readonly property", and only
+  `bun test --isolate` hides it. Produce from `createDefaultSettings()` (a
+  fresh object per call); keep `DEFAULT_SETTINGS` for reads
+  (`src/app/plugin.spec.ts` pins both).
 - **`setControlValue` MUST reject on failure.** Resolving tells the framework
   the write landed, so the pane keeps showing a value that was never stored.
   Rejecting rolls the control back to `getControlValue`'s answer.

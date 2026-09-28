@@ -5,6 +5,20 @@ export interface PluginSettings {
     enabled: boolean
 }
 
-export const DEFAULT_SETTINGS: PluginSettings = {
-    enabled: false
+/**
+ * A fresh default settings object, safe to hand to Immer.
+ *
+ * `produce` deep-freezes what it returns, including any subtree it shares
+ * with its base. Producing from the shared DEFAULT_SETTINGS froze that
+ * constant (and its arrays) for the rest of the process, so any later code
+ * or test touching it failed with "Attempted to assign to readonly
+ * property". Produce from this instead.
+ */
+export function createDefaultSettings(): PluginSettings {
+    return {
+        enabled: false
+    }
 }
+
+/** The defaults, for reading and comparing. Never produce from it. */
+export const DEFAULT_SETTINGS: PluginSettings = createDefaultSettings()

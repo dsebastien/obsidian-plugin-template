@@ -1,5 +1,5 @@
 import { Plugin } from 'obsidian'
-import { DEFAULT_SETTINGS } from './types/plugin-settings.intf'
+import { createDefaultSettings } from './types/plugin-settings.intf'
 import type { PluginSettings } from './types/plugin-settings.intf'
 import { TemplatePluginSettingTab } from './settings/settings-tab'
 import { log } from '../utils/log'
@@ -14,7 +14,7 @@ export class TemplatePlugin extends Plugin {
      */
     // `override` required: `Plugin.settings?: unknown` exists in the 1.13+
     // typings this template now targets (minAppVersion 1.13.0).
-    override settings: PluginSettings = produce(DEFAULT_SETTINGS, () => DEFAULT_SETTINGS)
+    override settings: PluginSettings = produce(createDefaultSettings(), () => {})
 
     /**
      * Executed as soon as the plugin loads
@@ -38,11 +38,10 @@ export class TemplatePlugin extends Plugin {
      */
     async loadSettings() {
         log('Loading settings', 'debug')
-        let loadedSettings = (await this.loadData()) as PluginSettings
+        const loadedSettings = (await this.loadData()) as PluginSettings
 
         if (!loadedSettings) {
             log('Using default settings', 'debug')
-            loadedSettings = produce(DEFAULT_SETTINGS, () => DEFAULT_SETTINGS)
             return
         }
 
