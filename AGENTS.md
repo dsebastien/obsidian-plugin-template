@@ -793,10 +793,6 @@ export default class TemplatePlugin extends Plugin {
 }
 ```
 
-(Flat settings only: nested defaults going through Immer start from
-`createDefaultSettings()`, see "Never `produce()` from the shared
-`DEFAULT_SETTINGS`".)
-
 **settings.ts**:
 
 ```ts
